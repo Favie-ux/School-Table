@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magic Math Garden 🌸 - Bouncy Equations for Kids</title>
+    <meta name="description" content="An interactive children's educational mathematical playground with moving clouds, butterflies, floating balloons, and relaxing ambient music.">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+    <!-- Ultra-Animated Landscape Elements Overlay -->
+    <div class="animation-layer" aria-hidden="true">
+        <!-- Twinkling Stars in Sky -->
+        <span class="star star-1">⭐</span>
+        <span class="star star-2">✨</span>
+        <span class="star star-3">⭐</span>
+
+        <!-- Rotating smiling sun -->
+        <div class="animated-sun">🌞</div>
+
+        <!-- Gliding Birds -->
+        <div class="bird bird-1">🐦</div>
+        <div class="bird bird-2">🐤</div>
+
+        <!-- Fluttering Butterflies -->
+        <div class="butterfly butterfly-1">🦋</div>
+        <div class="butterfly butterfly-2">🦋</div>
+        <div class="butterfly butterfly-3">🦋</div>
+
+        <!-- Playful Rising Balloons -->
+        <div class="balloon balloon-1">🎈</div>
+        <div class="balloon balloon-2">💛</div>
+        <div class="balloon balloon-3">🎈</div>
+        <div class="balloon balloon-4">💜</div>
+        <div class="balloon balloon-5">💚</div>
+
+        <!-- Jumping Rabbit & Bouncing Panda on Grass Meadow -->
+        <div class="meadow-animal rabbit">🐇</div>
+        <div class="meadow-animal panda-bounce">🐼</div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <header>
+            <img src="./Pasted image.png" alt="Good Fortune Model School Logo" class="school-logo" onerror="this.style.display='none'">
+            <div class="school-brand">GOOD FORTUNE MODEL SCHOOL IBADAN</div>
+            <div class="school-motto">"Diligence and Integrity"</div>
+            <h1>Magic Math Garden 🌸</h1>
+            <p>Grow happy number tables in a beautiful forest! 🌳✨</p>
+        </header>
+
+        <!-- Playful Control signboard -->
+        <main class="control-panel">
+            <!-- Teacher Quick Presets -->
+            <div class="teacher-presets">
+                <span class="preset-label">🎒 Quick Presets:</span>
+                <button class="preset-btn" data-rows="5" data-cols="5">Basic (5x5)</button>
+                <button class="preset-btn" data-rows="10" data-cols="10">Standard (10x10)</button>
+                <button class="preset-btn" data-rows="12" data-cols="12">Advanced (12x12)</button>
+            </div>
+
+            <div class="control-inputs">
+            <div class="input-group">
+                <label for="firstNumber">🌸 How many Rows?</label>
+                <input type="number" id="firstNumber" min="1" max="20" value="5" placeholder="Enter rows">
+            </div>
+
+            <div class="input-group">
+                <label for="secondNumber">⭐ How many Columns?</label>
+                <input type="number" id="secondNumber" min="1" max="20" value="5" placeholder="Enter columns">
+            </div>
+
+            <div class="input-group">
+                <label for="selectOption">🎒 Choose Magic Math</label>
+                <select id="selectOption">
+                    <option value="add">Addition (+)</option>
+                    <option value="subtract">Subtraction (-)</option>
+                    <option value="multiply">Multiplication (×)</option>
+                    <option value="divide">Division (÷)</option>
+                </select>
+            </div>
+
+            </div> <!-- end control-inputs -->
+
+            <div class="quiz-toggle-container">
+                <label class="switch">
+                    <input type="checkbox" id="quizModeToggle">
+                    <span class="slider round"></span>
+                </label>
+                <span class="quiz-label">❓ Quiz Mode (Hide Answers)</span>
+            </div>
+
+            <div class="action-buttons">
+                <!-- Create Tables button -->
+                <button class="btn-grow" id="btnGrow">
+                    ✨ Create Tables!
+                </button>
+                <button class="btn-clear" id="btnClear" title="Clear Garden">
+                    🧹 Clear
+                </button>
+                <button class="btn-print" id="btnPrint" title="Print Worksheet">
+                    🖨️ Print
+                </button>
+            </div>
+        </main>
+
+        <!-- Results Display Box -->
+        <section class="results-container" id="resultsBox">
+            <h2 class="results-header">Your Math Harvest 🌿</h2>
+            <div class="scroll-wrapper">
+                <!-- Target div that the user's untouched script.js appends elements to -->
+                <div id="result"></div>
+            </div>
+        </section>
+
+        <!-- About & Usage Section -->
+        <section class="about-card">
+            <h3>🎒 About the Magic Math Garden</h3>
+            <p><strong>Usage:</strong> This entertaining tool helps children easily create mathematical tables for Addition, Subtraction, Multiplication, and Division! It is designed to make learning math fun, helping kids beautifully master their multiplication table ranges with bouncy animations and a friendly voice.  Note(You have to input the number of rows and columns given the number of values you want, like now, if you want the multiplication table of 5, you have to input 5 in the first box and 12 in the second box and you select either add, subtract, multiply or divide and then click the grow button)</p>
+            <div class="credits">
+                <span>Designed with 💖 by <strong>Favie -ux</strong></span>
+            </div>
+        </section>
+    </div>
+
+    <!-- Gentle Sound Status Banner -->
+    <div class="ambient-sound-status" id="soundStatus" style="opacity: 0.85;">
+        <span>🎵 Click anywhere to hear soft garden music!</span>
+        <button class="music-toggle-btn" id="musicToggleBtn" title="Pause/Play Music">🔊</button>
+        <div class="music-wave" id="musicWave" style="display: none;">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+
+    <!-- Congratulations Popup Modal -->
+    <div id="congratsPopup" class="congrats-popup hidden">
+        <div class="popup-content">
+            <h2>🎉 Congratulations! 🎉</h2>
+            <p>Your tables are successfully created!</p>
+        </div>
+    </div>
+
+    <!-- Star Jar for Gamification -->
+    <div class="star-jar-container" id="starJarContainer">
+        <div class="star-jar" title="Stars Collected!">
+            <span class="jar-icon">⭐</span>
+            <span class="jar-count" id="starCount">0</span>
+        </div>
+    </div>
+
+    <!-- Load script.js containing both your pristine math table logic and the visual design engine -->
+    <script src="script.js"></script>
+</body>
+</html>
