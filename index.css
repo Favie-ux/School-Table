@@ -16,6 +16,10 @@
     font-family: 'Fredoka', sans-serif;
 }
 
+html {
+    overflow-x: hidden;
+}
+
 body {
     background: url('background.png') no-repeat center center fixed;
     background-size: cover;
@@ -273,11 +277,11 @@ header p {
     box-shadow: 
         0 14px 0 var(--wood-color),
         0 25px 35px rgba(0,0,0,0.15);
-    display: flex;
     flex-wrap: wrap;
     gap: 20px;
     align-items: center;
     justify-content: center;
+    margin-top: 35px;
     margin-bottom: 45px;
     position: relative;
 }
@@ -617,9 +621,28 @@ header p {
     }
 
     header h1 {
-        font-size: 2.4rem;
+        font-size: 2.2rem;
+    }
+
+    .bounce-title span {
+        font-size: 1.8rem;
+    }
+
+    .loader-spinner {
+        font-size: 2.5rem;
     }
     
+    .toggles-group {
+        gap: 10px;
+    }
+    
+    .quiz-toggle-container {
+        padding: 8px 10px;
+    }
+    .quiz-label {
+        font-size: 0.9rem;
+    }
+
     header p {
         font-size: 1rem;
         padding: 6px 16px;
@@ -636,9 +659,16 @@ header p {
     }
     
     .control-panel {
-        padding: 18px;
+        padding: 15px;
         flex-direction: column;
         align-items: stretch;
+        gap: 12px;
+        margin-top: 25px;
+    }
+    
+    .input-group input, .input-group select {
+        padding: 8px 12px;
+        font-size: 1rem;
     }
     
     .btn-grow {
@@ -979,15 +1009,21 @@ header p {
 .btn-print:hover { background: #34d399; transform: translateY(-2px); }
 .btn-print:active { transform: translateY(3px); box-shadow: 0 4px 0 #059669; }
 
-/* Quiz Toggle */
-.quiz-toggle-container {
+/* Toggle Group (Quiz & Music) */
+.toggles-group {
     width: 100%;
     display: flex;
-    align-items: center;
     justify-content: center;
-    gap: 12px;
+    gap: 20px;
     margin-bottom: 15px;
-    padding: 10px;
+    flex-wrap: wrap;
+}
+
+.quiz-toggle-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 15px;
     background: rgba(255, 255, 255, 0.5);
     border-radius: 20px;
 }
@@ -1022,11 +1058,9 @@ input:checked + .slider { background-color: var(--secondary-color); }
 input:checked + .slider:before { transform: translateX(22px); }
 .quiz-label { font-weight: 700; color: #475569; font-size: 1.1rem; }
 
-/* Star Jar */
+/* --- Star Jar --- */
 .star-jar-container {
-    position: fixed;
-    top: 20px;
-    right: 20px;
+    /* Removed fixed positioning, now handled by top-controls */
     z-index: 1000;
 }
 .star-jar {
@@ -1110,4 +1144,393 @@ input:checked + .slider:before { transform: translateX(22px); }
     #result p.quiz-hidden::after {
         color: black;
     }
+}
+
+/* --- Gamification & Juiciness Animations --- */
+@keyframes shakeScreen {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+.shake-animation {
+    animation: shakeScreen 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes backflip {
+    0% { transform: rotateX(0deg); }
+    100% { transform: rotateX(360deg); }
+}
+.flip-animation {
+    animation: backflip 0.8s ease-in-out;
+}
+
+/* Medal Drop */
+.gold-medal {
+    position: absolute;
+    font-size: 3rem;
+    z-index: 10;
+    pointer-events: none;
+    animation: medalDrop 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+@keyframes medalDrop {
+    0% { top: -100px; transform: translateX(-50%) scale(0.5); opacity: 0; }
+    60% { top: -20px; transform: translateX(-50%) scale(1.2); opacity: 1; }
+    100% { top: -30px; transform: translateX(-50%) scale(1); opacity: 1; }
+}
+
+/* Relative positioning for the table group so the medal drops inside it correctly */
+.math-table-group {
+    position: relative;
+}
+
+/* --- Top Controls Grouping --- */
+.top-controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    z-index: 2000;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    padding: 10px 20px;
+    border-top: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+}
+
+.guide-btn {
+    background: #38bdf8;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: bold;
+    border: 2px solid #7dd3fc;
+    border-radius: 14px;
+    padding: 8px 14px;
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(56, 189, 248, 0.3);
+    transition: transform 0.2s;
+}
+.guide-btn:hover { transform: scale(1.05); }
+
+/* --- Pet Shop UI --- */
+.pet-shop-btn {
+    padding: 8px 14px;
+    background: #a855f7;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: 2px solid #d8b4fe;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(168, 85, 247, 0.4);
+    transition: transform 0.2s;
+}
+.pet-shop-btn:hover { transform: scale(1.05); }
+
+.pet-shop-modal {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.6);
+    z-index: 3000;
+    display: flex; justify-content: center; align-items: center;
+    backdrop-filter: blur(5px);
+}
+.pet-shop-modal.hidden { display: none; }
+.shop-content {
+    background: white; border-radius: 30px; padding: 30px;
+    width: 90%; max-width: 500px; text-align: center;
+    position: relative; border: 5px solid #d8b4fe;
+}
+.close-shop {
+    position: absolute; top: 15px; right: 15px; background: #ef4444; color: white;
+    border: none; border-radius: 50%; width: 35px; height: 35px;
+    font-size: 1.2rem; cursor: pointer;
+}
+.shop-items { display: flex; gap: 20px; justify-content: center; margin-top: 20px; flex-wrap: wrap; }
+.shop-item {
+    background: #f8fafc; border: 3px solid #cbd5e1; border-radius: 20px; padding: 20px; width: 180px;
+}
+.shop-item.unlocked { border-color: #22c55e; background: #f0fdf4; }
+.pet-preview { font-size: 4rem; margin-bottom: 10px; }
+.pet-name { font-weight: bold; color: #475569; margin-bottom: 10px; }
+.buy-pet-btn {
+    background: #fbbf24; color: #b45309; font-weight: 800; border: none; padding: 10px 20px; border-radius: 15px; cursor: pointer;
+    width: 100%; font-size: 1.1rem;
+}
+.buy-pet-btn:disabled { background: #e2e8f0; color: #94a3b8; cursor: not-allowed; }
+.shop-item.unlocked .buy-pet-btn { background: #22c55e; color: white; }
+
+/* --- Magic Paintbrush UI --- */
+.color-picker {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,255,255,0.95);
+    padding: 10px 20px;
+    border-radius: 30px;
+    display: flex;
+    gap: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    z-index: 1000;
+    align-items: center;
+    border: 3px solid #ff92ae;
+    transition: all 0.3s ease;
+}
+.color-picker.hidden { 
+    transform: translate(-50%, 100px);
+    opacity: 0;
+    pointer-events: none;
+}
+.color-btn {
+    width: 35px; height: 35px; border-radius: 50%; border: 3px solid white; cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.2s;
+}
+.color-btn:hover { transform: scale(1.2); }
+.color-btn.active { transform: scale(1.2); border-color: #4a5568; }
+
+/* --- Quiz Input --- */
+.quiz-input {
+    width: 60px;
+    padding: 5px;
+    font-size: 1.2rem;
+    text-align: center;
+    border: 2px solid #cbd5e1;
+    border-radius: 8px;
+    margin-left: 5px;
+    font-weight: bold;
+    color: #334155;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.quiz-input:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 5px rgba(56, 189, 248, 0.5);
+}
+.quiz-input:disabled {
+    background: transparent;
+    border-color: transparent;
+    color: inherit;
+    -webkit-text-fill-color: inherit;
+    opacity: 1;
+}
+
+/* --- Loading Screen --- */
+.loading-screen {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    z-index: 9999;
+    display: flex; justify-content: center; align-items: center;
+    transition: opacity 0.8s ease, visibility 0.8s;
+    overflow: hidden;
+}
+.loading-screen.hidden {
+    opacity: 0; visibility: hidden;
+}
+.loader-content {
+    text-align: center;
+    color: #ff4a7d;
+}
+.loader-spinner {
+    font-size: 4rem;
+    animation: spin 2s linear infinite;
+    margin: 20px 0;
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+.bounce-title span {
+    display: inline-block;
+    animation: bounce 1.5s infinite;
+    font-size: 3rem;
+    font-weight: 900;
+    text-shadow: 2px 2px 0 white;
+}
+.bounce-title span:nth-child(1) { animation-delay: 0.1s; }
+.bounce-title span:nth-child(2) { animation-delay: 0.2s; }
+.bounce-title span:nth-child(3) { animation-delay: 0.3s; }
+.bounce-title span:nth-child(4) { animation-delay: 0.4s; }
+.bounce-title span:nth-child(5) { animation-delay: 0.5s; }
+.bounce-title span:nth-child(6) { animation-delay: 0.6s; }
+.bounce-title span:nth-child(7) { animation-delay: 0.7s; }
+.bounce-title span:nth-child(8) { animation-delay: 0.8s; }
+.bounce-title span:nth-child(9) { animation-delay: 0.9s; }
+
+/* --- Custom Tooltips --- */
+.custom-tooltip {
+    position: relative;
+}
+.custom-tooltip::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: -80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: #475569;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    white-space: normal;
+    width: max-content;
+    max-width: 250px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 5000;
+    pointer-events: none;
+    text-align: center;
+    line-height: 1.4;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+.custom-tooltip::after {
+    content: "";
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    border-width: 8px;
+    border-style: solid;
+    border-color: transparent transparent #475569 transparent;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 5000;
+    pointer-events: none;
+}
+.custom-tooltip:hover::before, .custom-tooltip:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* --- Toast Notification --- */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: rgba(220, 38, 38, 0.95); /* Red/warning color */
+    color: white;
+    padding: 15px 30px;
+    border-radius: 30px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    z-index: 9999;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    pointer-events: none;
+    text-align: center;
+}
+
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+/* --- Multiple Choice Quiz UI --- */
+.quiz-options {
+    display: inline-flex;
+    gap: 8px;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+.quiz-btn {
+    background: #f8fafc;
+    border: 2px solid #cbd5e1;
+    color: #334155;
+    font-size: 1.2rem;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 0 #cbd5e1;
+}
+
+.quiz-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #cbd5e1;
+    background: #e2e8f0;
+}
+
+.quiz-btn:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #cbd5e1;
+}
+
+.quiz-btn.correct {
+    background: #4ade80 !important;
+    border-color: #166534 !important;
+    color: #14532d !important;
+    box-shadow: 0 2px 0 #166534 !important;
+    transform: translateY(2px);
+}
+
+.quiz-btn.wrong {
+    background: #f87171 !important;
+    border-color: #991b1b !important;
+    color: #450a0a !important;
+    box-shadow: 0 2px 0 #991b1b !important;
+    transform: translateY(2px);
+    opacity: 0.6;
+}
+
+.quiz-btn.correct-reveal {
+    background: #4ade80 !important;
+    border-color: #166534 !important;
+    color: #14532d !important;
+    box-shadow: none !important;
+    animation: pulseCorrect 1s infinite;
+}
+
+@keyframes pulseCorrect {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Make sure container fades in on load */
+body.loaded .container {
+    animation: fadeInUp 0.8s ease forwards;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- 10-Year Future Polish: Glassmorphism & Soft Shadows --- */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15) !important;
+}
+
+.control-panel, .results-container, .about-card, .shop-content, .popup-content, .top-controls {
+    /* Upgrading original box-shadows to premium multi-layered soft shadows */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08), 0 1px 8px rgba(0,0,0,0.04) !important;
 }

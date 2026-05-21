@@ -8,6 +8,18 @@
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
+    <!-- 🌟 Professional Loading Screen 🌟 -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loader-content">
+            <h1 class="bounce-title">
+                <span>M</span><span>a</span><span>g</span><span>i</span><span>c</span>
+                &nbsp;
+                <span>M</span><span>a</span><span>t</span><span>h</span>
+            </h1>
+            <div class="loader-spinner">✨</div>
+            <p>Growing the magical garden...</p>
+        </div>
+    </div>
 
     <!-- Ultra-Animated Landscape Elements Overlay -->
     <div class="animation-layer" aria-hidden="true">
@@ -37,7 +49,7 @@
 
         <!-- Jumping Rabbit & Bouncing Panda on Grass Meadow -->
         <div class="meadow-animal rabbit">🐇</div>
-        <div class="meadow-animal panda-bounce">🐼</div>
+        <div class="meadow-animal panda-bounce custom-tooltip" data-tooltip="This is your active pet! Collect stars to unlock new pets from the Pet Shop.">🐼</div>
     </div>
 
     <!-- Main Container -->
@@ -51,7 +63,7 @@
         </header>
 
         <!-- Playful Control signboard -->
-        <main class="control-panel">
+        <main class="control-panel glass-panel">
             <!-- Teacher Quick Presets -->
             <div class="teacher-presets">
                 <span class="preset-label">🎒 Quick Presets:</span>
@@ -83,12 +95,22 @@
 
             </div> <!-- end control-inputs -->
 
-            <div class="quiz-toggle-container">
-                <label class="switch">
-                    <input type="checkbox" id="quizModeToggle">
-                    <span class="slider round"></span>
-                </label>
-                <span class="quiz-label">❓ Quiz Mode (Hide Answers)</span>
+            <div class="toggles-group">
+                <div class="quiz-toggle-container">
+                    <label class="switch">
+                        <input type="checkbox" id="quizModeToggle">
+                        <span class="slider round"></span>
+                    </label>
+                    <span class="quiz-label">❓ Quiz Mode (Hide Answers)</span>
+                </div>
+                
+                <div class="quiz-toggle-container">
+                    <label class="switch">
+                        <input type="checkbox" id="musicToggleBtn" checked>
+                        <span class="slider round"></span>
+                    </label>
+                    <span class="quiz-label">🎵 Background Music</span>
+                </div>
             </div>
 
             <div class="action-buttons">
@@ -106,7 +128,7 @@
         </main>
 
         <!-- Results Display Box -->
-        <section class="results-container" id="resultsBox">
+        <section class="results-container glass-panel" id="resultsBox">
             <h2 class="results-header">Your Math Harvest 🌿</h2>
             <div class="scroll-wrapper">
                 <!-- Target div that the user's untouched script.js appends elements to -->
@@ -115,7 +137,7 @@
         </section>
 
         <!-- About & Usage Section -->
-        <section class="about-card">
+        <section class="about-card glass-panel">
             <h3>🎒 About the Magic Math Garden</h3>
             <p><strong>Usage:</strong> This entertaining tool helps children easily create mathematical tables for Addition, Subtraction, Multiplication, and Division! It is designed to make learning math fun, helping kids beautifully master their multiplication table ranges with bouncy animations and a friendly voice.  Note(You have to input the number of rows and columns given the number of values you want, like now, if you want the multiplication table of 5, you have to input 5 in the first box and 12 in the second box and you select either add, subtract, multiply or divide and then click the grow button)</p>
             <div class="credits">
@@ -124,16 +146,19 @@
         </section>
     </div>
 
-    <!-- Gentle Sound Status Banner -->
-    <div class="ambient-sound-status" id="soundStatus" style="opacity: 0.85;">
-        <span>🎵 Click anywhere to hear soft garden music!</span>
-        <button class="music-toggle-btn" id="musicToggleBtn" title="Pause/Play Music">🔊</button>
-        <div class="music-wave" id="musicWave" style="display: none;">
-            <span></span>
-            <span></span>
-            <span></span>
+    <!-- Vertical Sidebar Controls -->
+    <div class="top-controls">
+        <button id="guideBtn" class="guide-btn">❓ Guide</button>
+        <div class="star-jar-container" id="starJarContainer">
+            <div class="star-jar custom-tooltip" data-tooltip="Solve math blocks to earn stars! Use them to unlock pets.">
+                <span class="jar-icon">⭐</span>
+                <span class="jar-count" id="starCount">0</span>
+            </div>
         </div>
+        <button id="petShopBtn" class="pet-shop-btn custom-tooltip" data-tooltip="Spend your stars here to unlock magical companions!">🏪 Pet Shop</button>
     </div>
+
+    <!-- Old Gentle Sound Status Banner Removed -->
 
     <!-- Congratulations Popup Modal -->
     <div id="congratsPopup" class="congrats-popup hidden">
@@ -143,13 +168,55 @@
         </div>
     </div>
 
-    <!-- Star Jar for Gamification -->
-    <div class="star-jar-container" id="starJarContainer">
-        <div class="star-jar" title="Stars Collected!">
-            <span class="jar-icon">⭐</span>
-            <span class="jar-count" id="starCount">0</span>
+    <!-- Guide Modal -->
+    <div id="guideModal" class="pet-shop-modal hidden">
+        <div class="shop-content" style="text-align: left;">
+            <button class="close-shop" id="closeGuideBtn">✖</button>
+            <h2 style="text-align: center; color: #38bdf8;">📖 How to Play</h2>
+            <div style="margin-top: 15px; line-height: 1.6; color: #475569;">
+                <p><strong>1. Earn Stars ⭐:</strong> Generate a table and click on the math blocks to read them aloud. Every block you learn gives you a magic star!</p>
+                <p><strong>2. Quiz Mode 📝:</strong> Turn on Quiz Mode to hide the answers. You must TYPE the correct answer and press Enter. Once you submit, it locks! Correct answers give you stars.</p>
+                <p><strong>3. Pet Shop 🏪:</strong> Spend your collected stars in the Pet Shop to unlock magical companions like Dragons and Unicorns.</p>
+                <p><strong>4. Paint 🎨:</strong> Use the paintbrush at the bottom to color your tables however you like!</p>
+            </div>
         </div>
     </div>
+
+    <!-- Pet Shop Modal -->
+    <div id="petShopModal" class="pet-shop-modal hidden">
+        <div class="shop-content">
+            <button class="close-shop" id="closeShopBtn">✖</button>
+            <h2>🏪 Magic Pet Shop</h2>
+            <p>Spend your ⭐ Stars to unlock new companions!</p>
+            <div class="shop-items">
+                <div class="shop-item" data-cost="50" data-pet="🐉">
+                    <div class="pet-preview">🐉</div>
+                    <div class="pet-name">Baby Dragon</div>
+                    <button class="buy-pet-btn">50 ⭐</button>
+                </div>
+                <div class="shop-item" data-cost="100" data-pet="🦄">
+                    <div class="pet-preview">🦄</div>
+                    <div class="pet-name">Unicorn</div>
+                    <button class="buy-pet-btn">100 ⭐</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Magic Paintbrush -->
+    <div id="colorPickerUI" class="color-picker hidden">
+        <span>🎨 Paint!</span>
+        <button class="color-btn" style="background:#ffadad;" data-color="#ffadad"></button>
+        <button class="color-btn" style="background:#ffd6a5;" data-color="#ffd6a5"></button>
+        <button class="color-btn" style="background:#fdffb6;" data-color="#fdffb6"></button>
+        <button class="color-btn" style="background:#caffbf;" data-color="#caffbf"></button>
+        <button class="color-btn" style="background:#9bf6ff;" data-color="#9bf6ff"></button>
+        <button class="color-btn" style="background:#a0c4ff;" data-color="#a0c4ff"></button>
+        <button class="color-btn" style="background:#bdb2ff;" data-color="#bdb2ff"></button>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toastNotification" class="toast hidden"></div>
 
     <!-- Load script.js containing both your pristine math table logic and the visual design engine -->
     <script src="script.js"></script>

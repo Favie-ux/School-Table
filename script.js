@@ -57,6 +57,15 @@ function createTable() {
 // 🌸 Magic Math Garden - Design, Audio, and Vocal Engine
 // ========================================================
 
+window.addEventListener("load", () => {
+    // Hide the loading screen with a tiny delay to ensure a magical entrance!
+    setTimeout(() => {
+        const loader = document.getElementById("loadingScreen");
+        if (loader) loader.classList.add("hidden");
+        document.body.classList.add("loaded");
+    }, 1200);
+});
+
 document.addEventListener("DOMContentLoaded", () => {
     const btnGrow = document.getElementById("btnGrow");
     const resultsBox = document.getElementById("resultsBox");
@@ -74,7 +83,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const presetBtns = document.querySelectorAll(".preset-btn");
     const starCountEl = document.getElementById("starCount");
     const starJarContainer = document.getElementById("starJarContainer");
-    let starsCollected = 0;
+    
+    // --- Gamification State ---
+    let starsCollected = parseInt(localStorage.getItem('magicStars')) || 0;
+    if (starCountEl) starCountEl.textContent = starsCollected;
+    
+    let unlockedPets = JSON.parse(localStorage.getItem('unlockedPets')) || ['🐼'];
+    let activePet = localStorage.getItem('activePet') || '🐼';
+    const meadowPanda = document.querySelector(".panda-bounce");
+    if (meadowPanda) meadowPanda.textContent = activePet;
 
     let harvestSeq = 0; // Sequence ID to manage automated speech
     let isReading = false; // Flag to prevent music from overriding speech
@@ -85,6 +102,120 @@ document.addEventListener("DOMContentLoaded", () => {
     if ('preservesPitch' in localAudio) {
         localAudio.preservesPitch = false;
     }
+
+    // --- Guide Modal Logic ---
+    const guideBtn = document.getElementById("guideBtn");
+    const guideModal = document.getElementById("guideModal");
+    const closeGuideBtn = document.getElementById("closeGuideBtn");
+
+    if (guideBtn && guideModal) {
+        guideBtn.addEventListener("click", () => guideModal.classList.remove("hidden"));
+        closeGuideBtn.addEventListener("click", () => guideModal.classList.add("hidden"));
+    }
+
+    // --- Pet Shop Modal Logic ---
+    const petShopBtn = document.getElementById("petShopBtn");
+    const petShopModal = document.getElementById("petShopModal");
+    const closeShopBtn = document.getElementById("closeShopBtn");
+
+    if (petShopBtn && petShopModal) {
+        petShopBtn.addEventListener("click", () => {
+            updateShopUI();
+            petShopModal.classList.remove("hidden");
+        });
+        closeShopBtn.addEventListener("click", () => petShopModal.classList.add("hidden"));
+    }
+
+    function updateShopUI() {
+        document.querySelectorAll(".shop-item").forEach(item => {
+            const cost = parseInt(item.getAttribute("data-cost"));
+            const pet = item.getAttribute("data-pet");
+            const btn = item.querySelector(".buy-pet-btn");
+            
+            if (unlockedPets.includes(pet)) {
+                item.classList.add("unlocked");
+                btn.textContent = (activePet === pet) ? "Equipped" : "Equip";
+                btn.disabled = false;
+            } else {
+                if (starsCollected >= cost) {
+                    btn.disabled = false;
+                    btn.textContent = `Buy (${cost} ⭐)`;
+                } else {
+                    btn.disabled = true;
+                    btn.textContent = `Need ${cost} ⭐`;
+                }
+            }
+            
+            // Remove old listeners to avoid stacking
+            const newBtn = btn.cloneNode(true);
+            btn.replaceWith(newBtn);
+            
+            newBtn.addEventListener("click", () => {
+                if (unlockedPets.includes(pet)) {
+                    activePet = pet;
+                    localStorage.setItem('activePet', pet);
+                    if (meadowPanda) meadowPanda.textContent = pet;
+                    updateShopUI();
+                } else if (starsCollected >= cost) {
+                    starsCollected -= cost;
+                    localStorage.setItem('magicStars', starsCollected);
+                    if (starCountEl) starCountEl.textContent = starsCollected;
+                    unlockedPets.push(pet);
+                    localStorage.setItem('unlockedPets', JSON.stringify(unlockedPets));
+                    
+                    activePet = pet;
+                    localStorage.setItem('activePet', pet);
+                    if (meadowPanda) meadowPanda.textContent = pet;
+                    updateShopUI();
+                }
+            });
+        });
+    }
+
+    // --- Easter Eggs ---
+    const sunEl = document.querySelector(".animated-sun");
+    if (sunEl) {
+        sunEl.addEventListener("click", () => {
+            if (sunEl.textContent === "🌞") {
+                sunEl.textContent = "😎";
+            } else {
+                sunEl.textContent = "🌞";
+            }
+        });
+    }
+
+    const logoEl = document.querySelector(".school-logo");
+    let logoClicks = 0;
+    if (logoEl) {
+        logoEl.addEventListener("click", () => {
+            logoClicks++;
+            if (logoClicks >= 5) {
+                logoEl.classList.remove("flip-animation");
+                void logoEl.offsetWidth; // trigger reflow
+                logoEl.classList.add("flip-animation");
+                logoClicks = 0;
+            }
+        });
+    }
+
+    // --- Magic Paintbrush Initialization ---
+    window.activePaintColor = null;
+    document.querySelectorAll(".color-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const color = btn.getAttribute("data-color");
+            
+            // Toggle off if already active
+            if (btn.classList.contains("active")) {
+                btn.classList.remove("active");
+                window.activePaintColor = null;
+            } else {
+                document.querySelectorAll(".color-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                window.activePaintColor = color;
+            }
+        });
+    });
 
     // --- Teacher Presets ---
     if (presetBtns) {
@@ -110,6 +241,8 @@ document.addEventListener("DOMContentLoaded", () => {
             harvestSeq++; // Interrupt auto-read
             isReading = false;
             safePlayMusic();
+            const colorPickerUI = document.getElementById("colorPickerUI");
+            if (colorPickerUI) colorPickerUI.classList.add("hidden");
         });
     }
 
@@ -143,16 +276,60 @@ document.addEventListener("DOMContentLoaded", () => {
                 createTable();
             }
             
-            // --- QUIZ MODE: Hide answers if active ---
+            // --- QUIZ MODE: True Test Input Mode ---
             const isQuizMode = quizModeToggle && quizModeToggle.checked;
             const paragraphs = Array.from(resultDiv.querySelectorAll("p"));
             
             if (isQuizMode) {
-                paragraphs.forEach(p => p.classList.add("quiz-hidden"));
+                paragraphs.forEach(p => {
+                    const fullText = p.textContent;
+                    const parts = fullText.split("=");
+                    if (parts.length === 2) {
+                        const equation = parts[0] + "=";
+                        const answer = parseFloat(parts[1].trim());
+                        
+                        // Generate wrong answers
+                        let wrong1 = answer + Math.floor(Math.random() * 5) + 1;
+                        let wrong2 = answer - Math.floor(Math.random() * 5) - 1;
+                        if (wrong2 < 0 && answer > 0) wrong2 = answer + 2; // Keep positive if answer > 0
+                        if (wrong1 === wrong2) wrong1 += 1;
+                        
+                        const options = [
+                            { val: answer, correct: true },
+                            { val: wrong1, correct: false },
+                            { val: wrong2, correct: false }
+                        ];
+                        
+                        // Shuffle options
+                        options.sort(() => Math.random() - 0.5);
+                        
+                        const labels = ['A', 'B', 'C'];
+                        let buttonsHtml = '<span class="quiz-options">';
+                        options.forEach((opt, idx) => {
+                            buttonsHtml += `<button class="quiz-btn" data-correct="${opt.correct}">${labels[idx]}) ${opt.val}</button>`;
+                        });
+                        buttonsHtml += '</span>';
+                        
+                        p.innerHTML = `${equation} ${buttonsHtml}`;
+                    }
+                });
+                
+                // Add event listeners to the new buttons
+                document.querySelectorAll(".quiz-btn").forEach(btn => {
+                    btn.addEventListener("click", function(e) {
+                        e.stopPropagation(); // Prevent block read when picking answer
+                        checkQuizAnswer(this);
+                    });
+                });
+            } else {
+                paragraphs.forEach(p => p.classList.remove("quiz-hidden"));
             }
             
             // 4. Reveal math results container and scroll into view smoothly
             resultsBox.classList.add("active");
+            
+            const colorPickerUI = document.getElementById("colorPickerUI");
+            if (colorPickerUI) colorPickerUI.classList.remove("hidden");
 
             // 5. Show congratulations popup + emoji spray!
             if (paragraphs.length > 0) {
@@ -381,42 +558,133 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Pre-cache removed since we are using Cloud TTS
 
+    // --- Gamification Logic ---
+    function checkGroupCompletion(pBlock) {
+        const group = pBlock.closest(".math-table-group");
+        if (group) {
+            const allBlocks = Array.from(group.querySelectorAll("p"));
+            const allSolved = allBlocks.every(p => p.hasAttribute("data-quiz-solved") || p.hasAttribute("data-read"));
+            
+            if (allSolved && !group.hasAttribute("data-completed")) {
+                group.setAttribute("data-completed", "true");
+                document.body.classList.remove("shake-animation");
+                void document.body.offsetWidth;
+                document.body.classList.add("shake-animation");
+                setTimeout(() => document.body.classList.remove("shake-animation"), 600);
+                
+                const medal = document.createElement("div");
+                medal.className = "gold-medal";
+                medal.textContent = "🏅";
+                group.appendChild(medal);
+            }
+        }
+    }
+
+    function checkQuizAnswer(btnEl) {
+        const pBlock = btnEl.closest("p");
+        
+        // If already answered, show toast warning
+        if (pBlock.hasAttribute("data-locked")) {
+            showToast("You can't go back! You've picked your answer already.");
+            return;
+        }
+        
+        // Lock it
+        pBlock.setAttribute("data-locked", "true");
+        const isCorrect = btnEl.getAttribute("data-correct") === "true";
+        const allBtns = pBlock.querySelectorAll(".quiz-btn");
+        
+        // Disable all buttons in this block visually
+        allBtns.forEach(b => b.disabled = true);
+        
+        if (isCorrect) {
+            btnEl.classList.add("correct");
+            pBlock.style.setProperty("background", "#86efac", "important"); // green
+            pBlock.style.setProperty("color", "#14532d", "important");
+            pBlock.setAttribute("data-quiz-solved", "true");
+            
+            starsCollected++;
+            localStorage.setItem('magicStars', starsCollected);
+            if (starCountEl) starCountEl.textContent = starsCollected;
+            
+            const rect = btnEl.getBoundingClientRect();
+            animateStarToJar(rect.left, rect.top);
+        } else {
+            btnEl.classList.add("wrong");
+            pBlock.style.setProperty("background", "#fca5a5", "important"); // red
+            pBlock.style.setProperty("color", "#7f1d1d", "important");
+            pBlock.setAttribute("data-quiz-solved", "true");
+            
+            // Highlight the correct one
+            allBtns.forEach(b => {
+                if (b.getAttribute("data-correct") === "true") {
+                    b.classList.add("correct-reveal");
+                }
+            });
+        }
+        
+        checkGroupCompletion(pBlock);
+    }
+
+    // --- Toast Notification ---
+    function showToast(message) {
+        const toast = document.getElementById("toastNotification");
+        if (!toast) return;
+        toast.textContent = message;
+        toast.classList.remove("hidden");
+        toast.classList.add("show");
+        
+        if (window.toastTimeout) clearTimeout(window.toastTimeout);
+        window.toastTimeout = setTimeout(() => {
+            toast.classList.remove("show");
+        }, 3000);
+    }
+
+    function animateStarToJar(clientX, clientY) {
+        if (!starJarContainer) return;
+        const star = document.createElement("div");
+        star.className = "flying-star";
+        star.textContent = "⭐";
+        star.style.left = clientX + "px";
+        star.style.top = clientY + "px";
+        
+        const jarRect = starJarContainer.getBoundingClientRect();
+        const targetX = (jarRect.left + jarRect.width/2) - clientX + "px";
+        const targetY = (jarRect.top + jarRect.height/2) - clientY + "px";
+        
+        star.style.setProperty("--target-x", targetX);
+        star.style.setProperty("--target-y", targetY);
+        document.body.appendChild(star);
+        setTimeout(() => star.remove(), 800);
+    }
+
     // --- Playful Sparks on Block Click ---
     if (resultDiv) {
         resultDiv.addEventListener("click", (e) => {
             const pBlock = e.target.closest("p");
             if (!pBlock) return;
             
-            e.stopPropagation(); // prevent document click from unpausing or doing weird things
+            if (e.target.tagName.toLowerCase() === 'input') return; // Don't read if typing
             
-            // Quiz Mode reveal
-            let wasHidden = false;
-            if (pBlock.classList.contains("quiz-hidden")) {
-                pBlock.classList.remove("quiz-hidden");
-                wasHidden = true;
+            e.stopPropagation();
+            
+            const hasInput = pBlock.querySelector("input");
+            
+            if (!hasInput && !pBlock.hasAttribute("data-read")) {
+                starsCollected++;
+                localStorage.setItem('magicStars', starsCollected);
+                if (starCountEl) starCountEl.textContent = starsCollected;
+                animateStarToJar(e.clientX, e.clientY);
             }
             
-            // Star Jar Logic (reward them for reading or revealing)
-            starsCollected++;
-            if (starCountEl) starCountEl.textContent = starsCollected;
+            pBlock.setAttribute("data-read", "true");
             
-            // Animate star flying to jar
-            if (starJarContainer) {
-                const star = document.createElement("div");
-                star.className = "flying-star";
-                star.textContent = "⭐";
-                star.style.left = e.clientX + "px";
-                star.style.top = e.clientY + "px";
-                
-                const jarRect = starJarContainer.getBoundingClientRect();
-                const targetX = (jarRect.left + jarRect.width/2) - e.clientX + "px";
-                const targetY = (jarRect.top + jarRect.height/2) - e.clientY + "px";
-                
-                star.style.setProperty("--target-x", targetX);
-                star.style.setProperty("--target-y", targetY);
-                document.body.appendChild(star);
-                
-                setTimeout(() => star.remove(), 800);
+            if (window.activePaintColor) {
+                pBlock.style.setProperty("background", window.activePaintColor, "important");
+            }
+
+            if (!hasInput) {
+                checkGroupCompletion(pBlock);
             }
             
             // Stop any current reading and speak this specific block
@@ -489,13 +757,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 ambientStarted = true;
                 removeTriggerListeners();
-                if (soundStatus) {
-                    const trackName = playlist[currentTrackIndex].name;
-                    const spanEl = soundStatus.querySelector("span:first-child");
-                    if (spanEl) spanEl.innerText = `🍀 Playing ${trackName} music!`;
-                }
-                if (musicWave) musicWave.style.display = "flex";
-                if (musicToggleBtn) musicToggleBtn.textContent = "🔊";
+                if (musicToggleBtn) musicToggleBtn.checked = true;
             }
         }).catch(e => {
             console.warn("Music play blocked:", e);
@@ -507,20 +769,16 @@ document.addEventListener("DOMContentLoaded", () => {
         musicShouldBePaused = true;
         if (explicit) musicExplicitlyMuted = true;
         bgMusic.pause();
-        if (explicit) {
-            if (musicWave) musicWave.style.display = "none";
-            if (musicToggleBtn) musicToggleBtn.textContent = "🔇";
+        if (explicit && musicToggleBtn) {
+            musicToggleBtn.checked = false;
         }
     }
 
     if (musicToggleBtn) {
-        musicToggleBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            if (bgMusic.paused || musicExplicitlyMuted) {
+        musicToggleBtn.addEventListener("change", (e) => {
+            if (musicToggleBtn.checked) {
                 musicExplicitlyMuted = false;
-                if (isReading) {
-                    musicToggleBtn.textContent = "🔊";
-                } else {
+                if (!isReading) {
                     safePlayMusic();
                 }
             } else {
