@@ -1,843 +1,573 @@
 // ========================================================
-// 🎒 Your Pristine Math Table Logic (Ready to Present!)
+// 🎒 Magic Math Garden Logic
 // ========================================================
 
-// for (let i = 1; i <= 10; i++) {
-//     for (j=1; j<=24; j++) {
-//      for (k=1; k<=4; k++){
-//          console.log(`carton: ${i}, biscuit: ${j}, Has ${k} number of biscuit`) 
-//      }  
-//     }
-// }   
+(() => {
+    const OPERATION_NAMES = {
+        add: "Add",
+        subtract: "Take Away",
+        multiply: "Times",
+        divide: "Share"
+    };
 
+    const QUIZ_LABELS = ["A", "B", "C"];
+    const STAR_KEY = "magicStars";
+    const UNLOCKED_PETS_KEY = "unlockedPets";
+    const ACTIVE_PET_KEY = "activePet";
 
-// for (i=1; i <= 12; i++) {
-//     for (j=1; j<=12; j++) {
-//         console.log(`${i} X ${j} = ${i*j}`)
-//     }
-// }
+    const PLAYLIST = [
+        { file: "cocomelon.mp3", name: "Cocomelon" },
+        { file: "kids_music.mp3", name: "Kids Tunes" },
+        { file: "llo.mp3", name: "Llo Lullaby" }
+    ];
 
+    const state = {
+        starsCollected: 0,
+        unlockedPets: ["🐼"],
+        activePet: "🐼",
+        currentTrackIndex: 0,
+        harvestSeq: 0,
+        isReading: false,
+        musicShouldBePaused: false,
+        musicExplicitlyMuted: false,
+        ambientStarted: false,
+        canStartMusic: false,
+        quizMode: false,
+        toastTimeoutId: null,
+        loaderTimeoutId: null
+    };
 
+    const dom = {};
 
-function createTable() {
-    const rowsInput = document.getElementById("firstNumber");
-    const columnsInput = document.getElementById("secondNumber");
-    const selectOption = document.getElementById("selectOption");
-    const rows = parseInt(rowsInput?.value) || 0;
-    const columns = parseInt(columnsInput?.value) || 0;
-    const selectOne = selectOption?.value;
-    const result = document.getElementById("result");
-    let htmlBuffer = ""; // Build the garden in memory first for better performance
+    const audio = {
+        speech: new Audio(),
+        music: null
+    };
 
-    for (let i = 1; i <= rows; i++){
-        htmlBuffer += `<div class="math-table-group">`;
-        htmlBuffer += `<h3 class="table-title">Table of ${i}</h3>`;
-        htmlBuffer += `<div class="table-group-content">`;
-        for(let j = 1; j <= columns; j++) {
-            if(selectOne == "add") {
-                htmlBuffer += `<p>${i} + ${j} = ${i+j}</p>`
-            }
-            else if(selectOne == "subtract") {
-                 htmlBuffer += `<p>${i} - ${j} = ${i-j}</p>`
-            }
-            else if(selectOne == "multiply") {
-                  htmlBuffer += `<p>${i} x ${j} = ${i*j}</p>`
-            }
-            else if(selectOne == "divide") {
-                htmlBuffer += `<p>${i} ÷ ${j} = ${(i/j).toFixed(1)}</p>`
-            }
+    function $(selector, root = document) {
+        return root.querySelector(selector);
+    }
+
+    function $all(selector, root = document) {
+        return Array.from(root.querySelectorAll(selector));
+    }
+
+    function parseStoredJson(key, fallback) {
+        try {
+            const value = localStorage.getItem(key);
+            return value ? JSON.parse(value) : fallback;
+        } catch {
+            return fallback;
         }
-        htmlBuffer += `</div></div>`;
-    }
-    result.innerHTML = htmlBuffer;
-}
-
-
-// ========================================================
-// 🌸 Magic Math Garden - Design, Audio, and Vocal Engine
-// ========================================================
-
-window.addEventListener("load", () => {
-    // Hide the loading screen with a tiny delay to ensure a magical entrance!
-    setTimeout(() => {
-        const loader = document.getElementById("loadingScreen");
-        if (loader) loader.classList.add("hidden");
-        document.body.classList.add("loaded");
-    }, 1200);
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    const btnGrow = document.getElementById("btnGrow");
-    const resultsBox = document.getElementById("resultsBox");
-    const resultDiv = document.getElementById("result");
-    const secondNumberInput = document.getElementById("secondNumber");
-    const soundStatus = document.getElementById("soundStatus");
-    const musicWave = document.getElementById("musicWave");
-    const congratsPopup = document.getElementById("congratsPopup");
-    const musicToggleBtn = document.getElementById("musicToggleBtn");
-    
-    // New feature elements
-    const quizModeToggle = document.getElementById("quizModeToggle");
-    const btnClear = document.getElementById("btnClear");
-    const btnPrint = document.getElementById("btnPrint");
-    const presetBtns = document.querySelectorAll(".preset-btn");
-    const starCountEl = document.getElementById("starCount");
-    const starJarContainer = document.getElementById("starJarContainer");
-    
-    // --- Gamification State ---
-    let starsCollected = parseInt(localStorage.getItem('magicStars')) || 0;
-    if (starCountEl) starCountEl.textContent = starsCollected;
-    
-    let unlockedPets = JSON.parse(localStorage.getItem('unlockedPets')) || ['🐼'];
-    let activePet = localStorage.getItem('activePet') || '🐼';
-    const meadowPanda = document.querySelector(".panda-bounce");
-    if (meadowPanda) meadowPanda.textContent = activePet;
-
-    let harvestSeq = 0; // Sequence ID to manage automated speech
-    let isReading = false; // Flag to prevent music from overriding speech
-    let musicShouldBePaused = false; // Bulletproof flag for play/pause races
-    let musicExplicitlyMuted = false; // Flag for user-toggled mute
-    // The bulletproof Local Voice Automator (Uses the 39 pre-downloaded audio files)
-    const localAudio = new Audio();
-    if ('preservesPitch' in localAudio) {
-        localAudio.preservesPitch = false;
     }
 
-    // --- Guide Modal Logic ---
-    const guideBtn = document.getElementById("guideBtn");
-    const guideModal = document.getElementById("guideModal");
-    const closeGuideBtn = document.getElementById("closeGuideBtn");
-
-    if (guideBtn && guideModal) {
-        guideBtn.addEventListener("click", () => guideModal.classList.remove("hidden"));
-        closeGuideBtn.addEventListener("click", () => guideModal.classList.add("hidden"));
+    function loadState() {
+        const stars = Number.parseInt(localStorage.getItem(STAR_KEY) || "0", 10);
+        state.starsCollected = Number.isFinite(stars) ? stars : 0;
+        state.unlockedPets = parseStoredJson(UNLOCKED_PETS_KEY, ["🐼"]);
+        if (!Array.isArray(state.unlockedPets) || state.unlockedPets.length === 0) {
+            state.unlockedPets = ["🐼"];
+        }
+        state.activePet = localStorage.getItem(ACTIVE_PET_KEY) || "🐼";
+        if (!state.unlockedPets.includes(state.activePet)) {
+            state.activePet = state.unlockedPets[0];
+        }
     }
 
-    // --- Pet Shop Modal Logic ---
-    const petShopBtn = document.getElementById("petShopBtn");
-    const petShopModal = document.getElementById("petShopModal");
-    const closeShopBtn = document.getElementById("closeShopBtn");
-
-    if (petShopBtn && petShopModal) {
-        petShopBtn.addEventListener("click", () => {
-            updateShopUI();
-            petShopModal.classList.remove("hidden");
-        });
-        closeShopBtn.addEventListener("click", () => petShopModal.classList.add("hidden"));
+    function saveStars() {
+        localStorage.setItem(STAR_KEY, String(state.starsCollected));
+        if (dom.starCountEl) dom.starCountEl.textContent = String(state.starsCollected);
     }
 
-    function updateShopUI() {
-        document.querySelectorAll(".shop-item").forEach(item => {
-            const cost = parseInt(item.getAttribute("data-cost"));
-            const pet = item.getAttribute("data-pet");
-            const btn = item.querySelector(".buy-pet-btn");
-            
-            if (unlockedPets.includes(pet)) {
-                item.classList.add("unlocked");
-                btn.textContent = (activePet === pet) ? "Equipped" : "Equip";
-                btn.disabled = false;
-            } else {
-                if (starsCollected >= cost) {
-                    btn.disabled = false;
-                    btn.textContent = `Buy (${cost} ⭐)`;
-                } else {
-                    btn.disabled = true;
-                    btn.textContent = `Need ${cost} ⭐`;
-                }
-            }
-            
-            // Remove old listeners to avoid stacking
-            const newBtn = btn.cloneNode(true);
-            btn.replaceWith(newBtn);
-            
-            newBtn.addEventListener("click", () => {
-                if (unlockedPets.includes(pet)) {
-                    activePet = pet;
-                    localStorage.setItem('activePet', pet);
-                    if (meadowPanda) meadowPanda.textContent = pet;
-                    updateShopUI();
-                } else if (starsCollected >= cost) {
-                    starsCollected -= cost;
-                    localStorage.setItem('magicStars', starsCollected);
-                    if (starCountEl) starCountEl.textContent = starsCollected;
-                    unlockedPets.push(pet);
-                    localStorage.setItem('unlockedPets', JSON.stringify(unlockedPets));
-                    
-                    activePet = pet;
-                    localStorage.setItem('activePet', pet);
-                    if (meadowPanda) meadowPanda.textContent = pet;
-                    updateShopUI();
-                }
-            });
+    function savePets() {
+        localStorage.setItem(UNLOCKED_PETS_KEY, JSON.stringify(state.unlockedPets));
+        localStorage.setItem(ACTIVE_PET_KEY, state.activePet);
+    }
+
+    function operationLabel(operation) {
+        return OPERATION_NAMES[operation] || "Times";
+    }
+
+    function syncMusicIcon() {
+        if (!dom.musicToggleIcon || !dom.musicToggleBtn) return;
+        dom.musicToggleIcon.classList.toggle("active", dom.musicToggleBtn.checked);
+    }
+
+    function syncPreviews() {
+        if (dom.firstNumberPreview && dom.firstNumberInput) {
+            dom.firstNumberPreview.textContent = dom.firstNumberInput.value;
+        }
+
+        if (dom.secondNumberPreview && dom.secondNumberInput) {
+            dom.secondNumberPreview.textContent = dom.secondNumberInput.value;
+        }
+
+        if (dom.operationPreview && dom.selectOption) {
+            dom.operationPreview.textContent = operationLabel(dom.selectOption.value);
+        }
+
+        if (dom.selectionSummary && dom.firstNumberInput && dom.secondNumberInput && dom.selectOption) {
+            dom.selectionSummary.textContent =
+                `Ready: ${dom.firstNumberInput.value} ${operationLabel(dom.selectOption.value)} up to ${dom.secondNumberInput.value}.`;
+        }
+    }
+
+    function setStepDone(stepId, isDone) {
+        const step = document.getElementById(stepId);
+        if (!step) return;
+        step.classList.toggle("step-done", isDone);
+    }
+
+    function setSelectedState(buttons, selectedValue, keyAttr) {
+        buttons.forEach(button => {
+            const value = button.getAttribute(keyAttr);
+            const isSelected = value === String(selectedValue);
+            button.classList.toggle("selected", isSelected);
+            button.setAttribute("aria-pressed", isSelected ? "true" : "false");
         });
     }
 
-    // --- Easter Eggs ---
-    const sunEl = document.querySelector(".animated-sun");
-    if (sunEl) {
-        sunEl.addEventListener("click", () => {
-            if (sunEl.textContent === "🌞") {
-                sunEl.textContent = "😎";
-            } else {
-                sunEl.textContent = "🌞";
-            }
-        });
+    function setFirstNumber(value) {
+        if (!dom.firstNumberInput) return;
+        dom.firstNumberInput.value = String(value);
+        setSelectedState($all("#numberGrid1 .number-bubble"), value, "data-value");
+        setStepDone("step1", true);
+        syncPreviews();
     }
 
-    const logoEl = document.querySelector(".school-logo");
-    let logoClicks = 0;
-    if (logoEl) {
-        logoEl.addEventListener("click", () => {
-            logoClicks++;
-            if (logoClicks >= 5) {
-                logoEl.classList.remove("flip-animation");
-                void logoEl.offsetWidth; // trigger reflow
-                logoEl.classList.add("flip-animation");
-                logoClicks = 0;
-            }
-        });
+    function setSecondNumber(value) {
+        if (!dom.secondNumberInput) return;
+        dom.secondNumberInput.value = String(value);
+        setSelectedState($all("#numberGrid2 .number-bubble"), value, "data-value");
+        setStepDone("step3", true);
+        syncPreviews();
     }
 
-    // --- Magic Paintbrush Initialization ---
-    window.activePaintColor = null;
-    document.querySelectorAll(".color-btn").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const color = btn.getAttribute("data-color");
-            
-            // Toggle off if already active
-            if (btn.classList.contains("active")) {
-                btn.classList.remove("active");
-                window.activePaintColor = null;
-            } else {
-                document.querySelectorAll(".color-btn").forEach(b => b.classList.remove("active"));
-                btn.classList.add("active");
-                window.activePaintColor = color;
-            }
-        });
-    });
-
-    // --- Teacher Presets ---
-    if (presetBtns) {
-        presetBtns.forEach(btn => {
-            btn.addEventListener("click", () => {
-                const r = btn.getAttribute("data-rows");
-                const c = btn.getAttribute("data-cols");
-                const firstNumberInput = document.getElementById("firstNumber");
-                if (firstNumberInput) firstNumberInput.value = r;
-                if (secondNumberInput) secondNumberInput.value = c;
-                // Auto-generate
-                if (btnGrow) btnGrow.click();
-            });
-        });
+    function setOperation(value) {
+        if (!dom.selectOption) return;
+        dom.selectOption.value = value;
+        setSelectedState($all(".operation-card"), value, "data-op");
+        setStepDone("step2", true);
+        syncPreviews();
     }
 
-    // --- Clear Garden Button ---
-    if (btnClear) {
-        btnClear.addEventListener("click", () => {
-            resultDiv.innerHTML = "";
-            resultsBox.classList.remove("active");
-            stopSpeech();
-            harvestSeq++; // Interrupt auto-read
-            isReading = false;
-            safePlayMusic();
-            const colorPickerUI = document.getElementById("colorPickerUI");
-            if (colorPickerUI) colorPickerUI.classList.add("hidden");
-        });
-    }
-
-    // --- Print Worksheet Button ---
-    if (btnPrint) {
-        btnPrint.addEventListener("click", () => {
-            window.print();
-        });
-    }
-
-    // --- Orchestrate Grow button (Clears results first, runs your createTable second, grids columns third) ---
-    if (btnGrow) {
-        btnGrow.addEventListener("click", (e) => {
-            // Prevent this click from triggering document-level listeners that instantly unpause music
-            e.stopPropagation();
-            
-            // Unlock audio for sequential playback
-            if (!localAudio.src) {
-                localAudio.src = 'data:audio/mp3;base64,//OQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq';
-                localAudio.play().then(() => localAudio.pause()).catch(() => {});
-            }
-
-            // Mark greeting as spoken so we don't interrupt with a welcome message
-            greetingSpoken = true;
-
-            // 1. Clear previous math results first so old tables don't stack
-            resultDiv.innerHTML = "";
-            
-            // 2. Call your untouched, pristine createTable function from above!
-            if (typeof createTable === "function") {
-                createTable();
-            }
-            
-            // --- QUIZ MODE: True Test Input Mode ---
-            const isQuizMode = quizModeToggle && quizModeToggle.checked;
-            const paragraphs = Array.from(resultDiv.querySelectorAll("p"));
-            
-            if (isQuizMode) {
-                paragraphs.forEach(p => {
-                    const fullText = p.textContent;
-                    const parts = fullText.split("=");
-                    if (parts.length === 2) {
-                        const equation = parts[0] + "=";
-                        const answer = parseFloat(parts[1].trim());
-                        
-                        // Generate wrong answers
-                        let wrong1 = answer + Math.floor(Math.random() * 5) + 1;
-                        let wrong2 = answer - Math.floor(Math.random() * 5) - 1;
-                        if (wrong2 < 0 && answer > 0) wrong2 = answer + 2; // Keep positive if answer > 0
-                        if (wrong1 === wrong2) wrong1 += 1;
-                        
-                        const options = [
-                            { val: answer, correct: true },
-                            { val: wrong1, correct: false },
-                            { val: wrong2, correct: false }
-                        ];
-                        
-                        // Shuffle options
-                        options.sort(() => Math.random() - 0.5);
-                        
-                        const labels = ['A', 'B', 'C'];
-                        let buttonsHtml = '<span class="quiz-options">';
-                        options.forEach((opt, idx) => {
-                            buttonsHtml += `<button class="quiz-btn" data-correct="${opt.correct}">${labels[idx]}) ${opt.val}</button>`;
-                        });
-                        buttonsHtml += '</span>';
-                        
-                        p.innerHTML = `${equation} ${buttonsHtml}`;
-                    }
-                });
-                
-                // Add event listeners to the new buttons
-                document.querySelectorAll(".quiz-btn").forEach(btn => {
-                    btn.addEventListener("click", function(e) {
-                        e.stopPropagation(); // Prevent block read when picking answer
-                        checkQuizAnswer(this);
-                    });
-                });
-            } else {
-                paragraphs.forEach(p => p.classList.remove("quiz-hidden"));
-            }
-            
-            // 4. Reveal math results container and scroll into view smoothly
-            resultsBox.classList.add("active");
-            
-            const colorPickerUI = document.getElementById("colorPickerUI");
-            if (colorPickerUI) colorPickerUI.classList.remove("hidden");
-
-            // 5. Show congratulations popup + emoji spray!
-            if (paragraphs.length > 0) {
-                showCongratsPopup();
-                launchEmojiSpray();
-                
-                isReading = true; // Block music from playing
-                
-                // Stop any current speech immediately
-                stopSpeech();
-                
-                // Pause background music safely and bulletproof
-                safePauseMusic();
-
-                harvestSeq++;
-                const currentSeqId = harvestSeq;
-                let currentIndex = 0;
-
-                // Wait for the popup to finish showing before starting voice
-                setTimeout(() => {
-                    resultsBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    
-                    if (isQuizMode) {
-                        // In quiz mode, let the kid click to reveal. Don't auto-read the whole board.
-                        isReading = false;
-                        safePlayMusic();
-                        return;
-                    }
-                    
-                    // Sequential speaker ensures every equation is processed one after the other
-                    const speakNext = () => {
-                        if (currentSeqId !== harvestSeq) return;
-
-                        if (currentIndex < paragraphs.length) {
-                            const text = paragraphs[currentIndex].innerText;
-                            currentIndex++;
-                            const isLast = currentIndex === paragraphs.length;
-                            
-                            speakEquation(text, isLast ? () => {
-                                if (currentSeqId !== harvestSeq) return;
-                                isReading = false; // Allow music again
-                                
-                                // Entertaining Feature: Confetti Explosion for kids! 🎉
-                                launchConfetti();
-                                
-                                // Resume background music after the very last equation
-                                safePlayMusic();
-                            } : speakNext);
-                        }
-                    };
-                    // Start the reading sequence after popup closes
-                    speakNext();
-                }, 2800);
-            } else { // If there's no math to read, ensure music is playing
-                startAmbientMusic();
-            }
-        });
-    }
-
-    // --- Ultimate Local Voice Automation Engine ---
     function stopSpeech() {
-        if (!localAudio.paused) {
-            localAudio.pause();
-            localAudio.currentTime = 0;
+        if (!audio.speech.paused) {
+            audio.speech.pause();
+            audio.speech.currentTime = 0;
         }
     }
 
-    // Convert number strings like "342" or "2.4" into local audio file names
     function numberToAudioFiles(numStr) {
         if (numStr === "") return [];
-        let num = parseFloat(numStr);
-        if (isNaN(num)) return [];
-        
-        let words = [];
-        let numInt = Math.floor(num);
-        
+        const num = Number.parseFloat(numStr);
+        if (Number.isNaN(num)) return [];
+
+        const words = [];
+        const numInt = Math.floor(num);
+
         if (numInt === 0) {
             words.push("0");
         } else if (numInt <= 20) {
             words.push(numInt.toString());
         } else if (numInt < 100) {
-            let tens = Math.floor(numInt / 10) * 10;
-            let ones = numInt % 10;
+            const tens = Math.floor(numInt / 10) * 10;
+            const ones = numInt % 10;
             words.push(tens.toString());
             if (ones > 0) words.push(ones.toString());
         } else {
-            let hundreds = Math.floor(numInt / 100) * 100;
-            let remainder = numInt % 100;
+            const hundreds = Math.floor(numInt / 100) * 100;
+            const remainder = numInt % 100;
             words.push(hundreds.toString());
+
             if (remainder > 0) {
                 if (remainder <= 20) {
                     words.push(remainder.toString());
                 } else {
-                    let tens = Math.floor(remainder / 10) * 10;
-                    let ones = remainder % 10;
+                    const tens = Math.floor(remainder / 10) * 10;
+                    const ones = remainder % 10;
                     words.push(tens.toString());
                     if (ones > 0) words.push(ones.toString());
                 }
             }
         }
-        
-        // Handle decimals like 2.5
+
         if (numStr.includes(".")) {
             words.push("point");
-            let decimalPart = numStr.split(".")[1];
-            for (let i = 0; i < decimalPart.length; i++) {
-                words.push(decimalPart[i]);
-            }
+            const decimalPart = numStr.split(".")[1];
+            for (const digit of decimalPart) words.push(digit);
         }
+
         return words;
     }
 
-    // Recursively plays an array of local audio file names seamlessly
     function playAudioSequence(audioFiles, callback) {
         if (audioFiles.length === 0) {
             if (callback) callback();
             return;
         }
-        
-        let currentFile = audioFiles.shift(); // remove first element
-        localAudio.src = "voice/" + currentFile + ".mp3";
-        localAudio.playbackRate = 1.25; 
-        
-        localAudio.onended = () => {
-            playAudioSequence(audioFiles, callback);
-        };
-        
-        localAudio.onerror = (e) => {
+
+        const currentFile = audioFiles.shift();
+        audio.speech.src = `voice/${currentFile}.mp3`;
+        audio.speech.playbackRate = 1.2;
+
+        audio.speech.onended = () => playAudioSequence(audioFiles, callback);
+        audio.speech.onerror = () => {
             console.warn("Missing audio file:", currentFile);
             playAudioSequence(audioFiles, callback);
         };
-        
-        localAudio.play().catch(e => {
-            console.warn("Audio Play Blocked:", e);
-            setTimeout(() => playAudioSequence(audioFiles, callback), 200);
+
+        audio.speech.play().catch(err => {
+            console.warn("Audio play blocked:", err);
+            setTimeout(() => playAudioSequence(audioFiles, callback), 180);
         });
     }
 
     function speakEquation(rawFormula, callback) {
         stopSpeech();
-        
-        // Parse formula into tokens (e.g. "12 + 4 = 16" -> ["12", "+", "4", "=", "16"])
+
         const tokens = rawFormula.split(" ");
         let audioFiles = [];
-        
-        for (let token of tokens) {
+
+        for (const token of tokens) {
             if (token === "+") audioFiles.push("plus");
             else if (token === "-") audioFiles.push("minus");
             else if (token === "x" || token === "×" || token === "*") audioFiles.push("times");
-            else if (token === "/" || token === "÷") audioFiles.push("divided_by");
+            else if (token === "/" || token === "÷") audioFiles.push("divide");
             else if (token === "=") audioFiles.push("equals");
-            else {
-                audioFiles = audioFiles.concat(numberToAudioFiles(token));
-            }
+            else audioFiles = audioFiles.concat(numberToAudioFiles(token));
         }
-        
+
         playAudioSequence(audioFiles, callback);
     }
 
-    // --- Entertaining Confetti Feature ---
+    function renderTable() {
+        const rows = Number.parseInt(dom.firstNumberInput?.value ?? "0", 10);
+        const columns = Number.parseInt(dom.secondNumberInput?.value ?? "0", 10);
+        const operation = dom.selectOption?.value ?? "multiply";
+
+        if (!dom.resultDiv || !Number.isFinite(rows) || !Number.isFinite(columns)) return;
+
+        const htmlBuffer = [];
+
+        for (let row = 1; row <= rows; row += 1) {
+            const lines = [];
+
+            for (let column = 1; column <= columns; column += 1) {
+                const equation = buildEquation(row, column, operation);
+                lines.push(`<p data-equation="${equation.text}">${equation.display}</p>`);
+            }
+
+            htmlBuffer.push(
+                `<div class="math-table-group">
+                    <h3 class="table-title">Table of ${row}</h3>
+                    <div class="table-group-content">${lines.join("")}</div>
+                </div>`
+            );
+        }
+
+        dom.resultDiv.innerHTML = htmlBuffer.join("");
+    }
+
+    function buildEquation(row, column, operation) {
+        if (operation === "add") {
+            return {
+                text: `${row} + ${column} = ${row + column}`,
+                display: `${row} + ${column} = ${row + column}`
+            };
+        }
+
+        if (operation === "subtract") {
+            const left = Math.max(row, column);
+            const right = Math.min(row, column);
+            return {
+                text: `${left} - ${right} = ${left - right}`,
+                display: `${left} - ${right} = ${left - right}`
+            };
+        }
+
+        if (operation === "divide") {
+            return {
+                text: `${row} ÷ ${column} = ${(row / column).toFixed(1)}`,
+                display: `${row} ÷ ${column} = ${(row / column).toFixed(1)}`
+            };
+        }
+
+        return {
+            text: `${row} × ${column} = ${row * column}`,
+            display: `${row} × ${column} = ${row * column}`
+        };
+    }
+
     function launchConfetti() {
-        for (let i = 0; i < 40; i++) {
+        const colors = ["#ff547d", "#4ecdc4", "#f2d74e", "#8b5a2b", "#ffffff"];
+        for (let i = 0; i < 40; i += 1) {
             const confetti = document.createElement("div");
             confetti.classList.add("confetti");
-            confetti.style.left = Math.random() * 100 + "vw";
-            confetti.style.animationDuration = (Math.random() * 2 + 2) + "s";
-            
-            // Randomize confetti colors
-            const colors = ["#ff547d", "#4ecdc4", "#f2d74e", "#8b5a2b", "#ffffff"];
+            confetti.style.left = `${Math.random() * 100}vw`;
+            confetti.style.animationDuration = `${Math.random() * 2 + 2}s`;
             confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            
-            // Randomize shapes (squares vs circles)
-            if (Math.random() > 0.5) {
-                confetti.style.borderRadius = "50%";
-            }
-            
+            if (Math.random() > 0.5) confetti.style.borderRadius = "50%";
             document.body.appendChild(confetti);
-            
-            // Cleanup confetti after animation finishes
-            setTimeout(() => {
-                confetti.remove();
-            }, 5000);
+            setTimeout(() => confetti.remove(), 5000);
         }
     }
 
-    // --- Congratulations Popup ---
-    function showCongratsPopup() {
-        if (!congratsPopup) return;
-        congratsPopup.classList.remove("hidden");
-        
-        // Auto-close popup after 2.5 seconds
-        setTimeout(() => {
-            congratsPopup.classList.add("hidden");
-        }, 2500);
-    }
-
-    // --- Emoji Spray Explosion ---
     function launchEmojiSpray() {
         const emojis = ["🎉", "🎊", "🌟", "🎈", "✨", "🎇", "💫", "🏆", "🥳", "🎆"];
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
-        
-        for (let i = 0; i < 20; i++) {
+
+        for (let i = 0; i < 20; i += 1) {
             setTimeout(() => {
                 const emoji = document.createElement("span");
                 emoji.classList.add("emoji-spray");
                 emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-                
-                // Random direction spread from center
+
                 const angle = Math.random() * Math.PI * 2;
                 const distance = 150 + Math.random() * 250;
-                const sprayX = Math.cos(angle) * distance;
-                const sprayY = Math.sin(angle) * distance;
-                
-                emoji.style.left = centerX + "px";
-                emoji.style.top = centerY + "px";
-                emoji.style.setProperty("--spray-x", sprayX + "px");
-                emoji.style.setProperty("--spray-y", sprayY + "px");
-                
+
+                emoji.style.left = `${centerX}px`;
+                emoji.style.top = `${centerY}px`;
+                emoji.style.setProperty("--spray-x", `${Math.cos(angle) * distance}px`);
+                emoji.style.setProperty("--spray-y", `${Math.sin(angle) * distance}px`);
+
                 document.body.appendChild(emoji);
-                
                 setTimeout(() => emoji.remove(), 1800);
-            }, i * 60); // Stagger each emoji slightly
+            }, i * 60);
         }
     }
 
-    // Pre-cache removed since we are using Cloud TTS
-
-    // --- Gamification Logic ---
-    function checkGroupCompletion(pBlock) {
-        const group = pBlock.closest(".math-table-group");
-        if (group) {
-            const allBlocks = Array.from(group.querySelectorAll("p"));
-            const allSolved = allBlocks.every(p => p.hasAttribute("data-quiz-solved") || p.hasAttribute("data-read"));
-            
-            if (allSolved && !group.hasAttribute("data-completed")) {
-                group.setAttribute("data-completed", "true");
-                document.body.classList.remove("shake-animation");
-                void document.body.offsetWidth;
-                document.body.classList.add("shake-animation");
-                setTimeout(() => document.body.classList.remove("shake-animation"), 600);
-                
-                const medal = document.createElement("div");
-                medal.className = "gold-medal";
-                medal.textContent = "🏅";
-                group.appendChild(medal);
-            }
-        }
+    function showCongratsPopup() {
+        if (!dom.congratsPopup) return;
+        dom.congratsPopup.classList.remove("hidden");
+        setTimeout(() => dom.congratsPopup.classList.add("hidden"), 2500);
     }
 
-    function checkQuizAnswer(btnEl) {
-        const pBlock = btnEl.closest("p");
-        
-        // If already answered, show toast warning
-        if (pBlock.hasAttribute("data-locked")) {
-            showToast("You can't go back! You've picked your answer already.");
-            return;
-        }
-        
-        // Lock it
-        pBlock.setAttribute("data-locked", "true");
-        const isCorrect = btnEl.getAttribute("data-correct") === "true";
-        const allBtns = pBlock.querySelectorAll(".quiz-btn");
-        
-        // Disable all buttons in this block visually
-        allBtns.forEach(b => b.disabled = true);
-        
-        if (isCorrect) {
-            btnEl.classList.add("correct");
-            pBlock.style.setProperty("background", "#86efac", "important"); // green
-            pBlock.style.setProperty("color", "#14532d", "important");
-            pBlock.setAttribute("data-quiz-solved", "true");
-            
-            starsCollected++;
-            localStorage.setItem('magicStars', starsCollected);
-            if (starCountEl) starCountEl.textContent = starsCollected;
-            
-            const rect = btnEl.getBoundingClientRect();
-            animateStarToJar(rect.left, rect.top);
-        } else {
-            btnEl.classList.add("wrong");
-            pBlock.style.setProperty("background", "#fca5a5", "important"); // red
-            pBlock.style.setProperty("color", "#7f1d1d", "important");
-            pBlock.setAttribute("data-quiz-solved", "true");
-            
-            // Highlight the correct one
-            allBtns.forEach(b => {
-                if (b.getAttribute("data-correct") === "true") {
-                    b.classList.add("correct-reveal");
-                }
-            });
-        }
-        
-        checkGroupCompletion(pBlock);
-    }
-
-    // --- Toast Notification ---
     function showToast(message) {
-        const toast = document.getElementById("toastNotification");
-        if (!toast) return;
-        toast.textContent = message;
-        toast.classList.remove("hidden");
-        toast.classList.add("show");
-        
-        if (window.toastTimeout) clearTimeout(window.toastTimeout);
-        window.toastTimeout = setTimeout(() => {
-            toast.classList.remove("show");
-        }, 3000);
+        if (!dom.toastNotification) return;
+
+        dom.toastNotification.textContent = message;
+        dom.toastNotification.classList.remove("hidden");
+        requestAnimationFrame(() => dom.toastNotification.classList.add("show"));
+
+        if (state.toastTimeoutId) clearTimeout(state.toastTimeoutId);
+        state.toastTimeoutId = setTimeout(() => {
+            dom.toastNotification.classList.remove("show");
+            setTimeout(() => dom.toastNotification.classList.add("hidden"), 240);
+        }, 2600);
     }
 
     function animateStarToJar(clientX, clientY) {
-        if (!starJarContainer) return;
+        if (!dom.starJarContainer) return;
+
         const star = document.createElement("div");
         star.className = "flying-star";
         star.textContent = "⭐";
-        star.style.left = clientX + "px";
-        star.style.top = clientY + "px";
-        
-        const jarRect = starJarContainer.getBoundingClientRect();
-        const targetX = (jarRect.left + jarRect.width/2) - clientX + "px";
-        const targetY = (jarRect.top + jarRect.height/2) - clientY + "px";
-        
-        star.style.setProperty("--target-x", targetX);
-        star.style.setProperty("--target-y", targetY);
+        star.style.left = `${clientX}px`;
+        star.style.top = `${clientY}px`;
+
+        const jarRect = dom.starJarContainer.getBoundingClientRect();
+        const targetX = jarRect.left + jarRect.width / 2 - clientX;
+        const targetY = jarRect.top + jarRect.height / 2 - clientY;
+
+        star.style.setProperty("--target-x", `${targetX}px`);
+        star.style.setProperty("--target-y", `${targetY}px`);
+
         document.body.appendChild(star);
         setTimeout(() => star.remove(), 800);
     }
 
-    // --- Playful Sparks on Block Click ---
-    if (resultDiv) {
-        resultDiv.addEventListener("click", (e) => {
-            const pBlock = e.target.closest("p");
-            if (!pBlock) return;
-            
-            if (e.target.tagName.toLowerCase() === 'input') return; // Don't read if typing
-            
-            e.stopPropagation();
-            
-            const hasInput = pBlock.querySelector("input");
-            
-            if (!hasInput && !pBlock.hasAttribute("data-read")) {
-                starsCollected++;
-                localStorage.setItem('magicStars', starsCollected);
-                if (starCountEl) starCountEl.textContent = starsCollected;
-                animateStarToJar(e.clientX, e.clientY);
-            }
-            
-            pBlock.setAttribute("data-read", "true");
-            
-            if (window.activePaintColor) {
-                pBlock.style.setProperty("background", window.activePaintColor, "important");
+    function checkGroupCompletion(pBlock) {
+        const group = pBlock.closest(".math-table-group");
+        if (!group) return;
+
+        const allBlocks = $all("p", group);
+        const allSolved = allBlocks.every(p => p.hasAttribute("data-quiz-solved") || p.hasAttribute("data-read"));
+
+        if (!allSolved || group.hasAttribute("data-completed")) return;
+
+        group.setAttribute("data-completed", "true");
+        document.body.classList.remove("shake-animation");
+        void document.body.offsetWidth;
+        document.body.classList.add("shake-animation");
+        setTimeout(() => document.body.classList.remove("shake-animation"), 600);
+
+        const medal = document.createElement("div");
+        medal.className = "gold-medal";
+        medal.textContent = "🏅";
+        group.appendChild(medal);
+    }
+
+    function updateShopUI() {
+        $all(".shop-item").forEach(item => {
+            const cost = Number.parseInt(item.getAttribute("data-cost") || "0", 10);
+            const pet = item.getAttribute("data-pet") || "";
+            const btn = $(".buy-pet-btn", item);
+
+            if (!btn) return;
+
+            item.classList.toggle("unlocked", state.unlockedPets.includes(pet));
+
+            if (state.unlockedPets.includes(pet)) {
+                btn.textContent = state.activePet === pet ? "Equipped" : "Equip";
+                btn.disabled = false;
+            } else if (state.starsCollected >= cost) {
+                btn.disabled = false;
+                btn.textContent = `Buy (${cost} ⭐)`;
+            } else {
+                btn.disabled = true;
+                btn.textContent = `Need ${cost} ⭐`;
             }
 
-            if (!hasInput) {
-                checkGroupCompletion(pBlock);
-            }
-            
-            // Stop any current reading and speak this specific block
-            stopSpeech();
-            harvestSeq++; // Interrupt any ongoing auto-reading sequence
-            
-            if (bgMusic) bgMusic.volume = 0.3;
-            isReading = true;
-            
-            speakEquation(pBlock.innerText, () => {
-                isReading = false;
-                // Restore music volume after the voice is done
-                if (bgMusic) bgMusic.volume = 1.0;
+            if (btn.dataset.bound === "true") return;
+            btn.dataset.bound = "true";
+
+            btn.addEventListener("click", () => {
+                if (state.unlockedPets.includes(pet)) {
+                    state.activePet = pet;
+                    savePets();
+                    if (dom.meadowPanda) dom.meadowPanda.textContent = pet;
+                    updateShopUI();
+                    return;
+                }
+
+                if (state.starsCollected < cost) {
+                    showToast(`You need ${cost} stars to unlock ${pet}.`);
+                    return;
+                }
+
+                state.starsCollected -= cost;
+                state.unlockedPets.push(pet);
+                state.activePet = pet;
+                saveStars();
+                savePets();
+
+                if (dom.meadowPanda) dom.meadowPanda.textContent = pet;
+                showToast(`${pet} unlocked!`);
+                updateShopUI();
             });
-            
-            // Spawn floaty spark emojis inside block
-            const sparks = ["⭐", "✨", "🌸", "🎈", "🍬", "🍀"];
-            const chosenSpark = sparks[Math.floor(Math.random() * sparks.length)];
-            
-            const particle = document.createElement("span");
-            particle.className = "click-particle";
-            particle.textContent = chosenSpark;
-            
-            const rect = pBlock.getBoundingClientRect();
-            particle.style.left = `${e.clientX - rect.left}px`;
-            particle.style.top = `${e.clientY - rect.top}px`;
-            
-            pBlock.appendChild(particle);
-            
-            setTimeout(() => {
-                particle.remove();
-            }, 600);
         });
     }
 
-    // --- Radio Playlist Audio Engine (Local Files) ---
-    let ambientStarted = false;
-    let greetingSpoken = false;
-    
-    // Background Music Playlist
-    const playlist = [
-        { file: 'cocomelon.mp3', name: 'Cocomelon' },
-        { file: 'kids_music.mp3', name: 'Kids Tunes' },
-        { file: 'llo.mp3', name: 'Llo Lullaby' }
-    ];
-    // Shuffle playlist on load
-    playlist.sort(() => Math.random() - 0.5);
-    
-    let currentTrackIndex = 0;
-    const bgMusic = new Audio(playlist[currentTrackIndex].file);
-    bgMusic.volume = 1.0;
-    bgMusic.preload = "auto";
-    
-    // Shuffle logic: play next song when one finishes
-    bgMusic.onended = () => {
-        currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
-        bgMusic.src = playlist[currentTrackIndex].file;
-        safePlayMusic();
-    };
+    function updateSelectionSummary() {
+        syncPreviews();
+    }
 
-    // Bulletproof pause/play wrapper
+    function setQuizMode(isEnabled) {
+        state.quizMode = Boolean(isEnabled);
+        if (dom.quizToggleIcon) {
+            dom.quizToggleIcon.classList.toggle("active", state.quizMode);
+        }
+        if (dom.quizModeToggle) {
+            dom.quizModeToggle.checked = state.quizMode;
+        }
+    }
+
+    function createQuizChoices(pBlock) {
+        const rawText = pBlock.getAttribute("data-equation") || pBlock.textContent || "";
+        const parts = rawText.split("=");
+        if (parts.length !== 2) return;
+
+        const equation = `${parts[0].trim()} =`;
+        const answer = Number.parseFloat(parts[1].trim());
+        if (!Number.isFinite(answer)) return;
+
+        const wrongAnswers = new Set();
+
+        while (wrongAnswers.size < 2) {
+            const offset = Math.floor(Math.random() * 8) + 1;
+            const candidate = Math.max(0, answer + (Math.random() > 0.5 ? offset : -offset));
+            if (candidate !== answer) wrongAnswers.add(candidate);
+        }
+
+        const options = [{ val: answer, correct: true }, ...Array.from(wrongAnswers).map(val => ({ val, correct: false }))];
+        options.sort(() => Math.random() - 0.5);
+
+        const buttonsHtml = `<span class="quiz-options">${
+            options.map((opt, idx) => `<button class="quiz-btn" type="button" data-correct="${opt.correct}">${QUIZ_LABELS[idx]}) ${opt.val}</button>`).join("")
+        }</span>`;
+
+        pBlock.innerHTML = `${equation} ${buttonsHtml}`;
+        pBlock.setAttribute("data-equation", rawText);
+    }
+
+    function checkQuizAnswer(button) {
+        const pBlock = button.closest("p");
+        if (!pBlock) return;
+
+        if (pBlock.hasAttribute("data-locked")) {
+            showToast("You already picked an answer.");
+            return;
+        }
+
+        pBlock.setAttribute("data-locked", "true");
+
+        const isCorrect = button.getAttribute("data-correct") === "true";
+        const allBtns = $all(".quiz-btn", pBlock);
+
+        allBtns.forEach(btn => {
+            btn.disabled = true;
+        });
+
+        if (isCorrect) {
+            button.classList.add("correct");
+            pBlock.style.setProperty("background", "#86efac", "important");
+            pBlock.style.setProperty("color", "#14532d", "important");
+            pBlock.setAttribute("data-quiz-solved", "true");
+
+            state.starsCollected += 1;
+            saveStars();
+
+            const rect = button.getBoundingClientRect();
+            animateStarToJar(rect.left, rect.top);
+        } else {
+            button.classList.add("wrong");
+            pBlock.style.setProperty("background", "#fca5a5", "important");
+            pBlock.style.setProperty("color", "#7f1d1d", "important");
+            pBlock.setAttribute("data-quiz-solved", "true");
+
+            allBtns.forEach(btn => {
+                if (btn.getAttribute("data-correct") === "true") {
+                    btn.classList.add("correct-reveal");
+                }
+            });
+        }
+
+        checkGroupCompletion(pBlock);
+    }
+
     function safePlayMusic() {
-        if (!bgMusic) return;
-        if (musicExplicitlyMuted) return;
-        musicShouldBePaused = false;
-        bgMusic.play().then(() => {
-            if (musicShouldBePaused) {
-                // If a pause was requested while play() was still resolving, pause it immediately!
-                bgMusic.pause();
-            } else {
-                ambientStarted = true;
-                removeTriggerListeners();
-                if (musicToggleBtn) musicToggleBtn.checked = true;
+        if (!audio.music || state.musicExplicitlyMuted) return;
+
+        state.musicShouldBePaused = false;
+        audio.music.play().then(() => {
+            if (state.musicShouldBePaused) {
+                audio.music.pause();
+                return;
             }
-        }).catch(e => {
-            console.warn("Music play blocked:", e);
+
+            state.ambientStarted = true;
+            removeTriggerListeners();
+            if (dom.musicToggleBtn) dom.musicToggleBtn.checked = true;
+            syncMusicIcon();
+        }).catch(err => {
+            console.warn("Music play blocked:", err);
         });
     }
 
     function safePauseMusic(explicit = false) {
-        if (!bgMusic) return;
-        musicShouldBePaused = true;
-        if (explicit) musicExplicitlyMuted = true;
-        bgMusic.pause();
-        if (explicit && musicToggleBtn) {
-            musicToggleBtn.checked = false;
+        if (!audio.music) return;
+        state.musicShouldBePaused = true;
+        if (explicit) state.musicExplicitlyMuted = true;
+        audio.music.pause();
+
+        if (explicit && dom.musicToggleBtn) {
+            dom.musicToggleBtn.checked = false;
         }
+
+        syncMusicIcon();
     }
-
-    if (musicToggleBtn) {
-        musicToggleBtn.addEventListener("change", (e) => {
-            if (musicToggleBtn.checked) {
-                musicExplicitlyMuted = false;
-                if (!isReading) {
-                    safePlayMusic();
-                }
-            } else {
-                safePauseMusic(true);
-            }
-        });
-    }
-
-    function startAmbientMusic() {
-        // Ensure greeting is spoken on the very first user interaction
-        if (!greetingSpoken && !isReading) {
-            playAudioSequence(["Here_is_your_math_harvest"], () => {});
-            greetingSpoken = true;
-        }
-
-        // Attempt to play background music only if it hasn't started yet
-        if (!ambientStarted) { // Check ambientStarted here to prevent multiple play attempts
-            if (isReading) return; // Prevent starting music if child voice is currently reading
-            
-            safePlayMusic();
-        } else {
-            // If ambientStarted is true, but music might have been paused by visibilitychange, try to resume.
-            // This handles cases where user returns to tab but music didn't auto-resume.
-            if (!isReading && bgMusic.paused) {
-                safePlayMusic();
-            }
-        }
-    }
-
-    // --- Tab Visibility Logic (Off immediately when you leave) ---
-    document.addEventListener("visibilitychange", () => {
-        if (document.hidden) {
-            bgMusic.pause();
-            musicShouldBePaused = true;
-            stopSpeech();
-        } else if (ambientStarted && !isReading) {
-            safePlayMusic();
-        }
-    });
-
-    // --- Full Page Leave: Stop everything when user navigates away or closes tab ---
-    window.addEventListener("beforeunload", () => {
-        bgMusic.pause();
-        bgMusic.src = "";
-        stopSpeech();
-    });
-
-    window.addEventListener("pagehide", () => {
-        bgMusic.pause();
-        bgMusic.src = "";
-        stopSpeech();
-    });
-
-    // --- Autoplay Policy Bypass Orchestrator ---
-    // Browsers require a gesture to enable audio. To play sound "instantly", we trigger it 
-    // on load AND immediately on the very first tiny movement (mousemove, touch, keydown, scroll).
-    // This makes it feel completely automatic because the sound begins before the user even tries to click!
-    
-    let canStartMusic = false;
 
     function removeTriggerListeners() {
         document.removeEventListener("mousemove", handleInteractionStart);
@@ -848,25 +578,428 @@ document.addEventListener("DOMContentLoaded", () => {
         document.removeEventListener("mousedown", handleInteractionStart);
     }
 
+    function startAmbientMusic() {
+        if (!state.canStartMusic) return;
+        if (state.isReading) return;
+
+        if (!state.ambientStarted || audio.music.paused) {
+            safePlayMusic();
+        }
+    }
+
     function handleInteractionStart() {
-        if (canStartMusic) {
+        if (state.canStartMusic) {
             startAmbientMusic();
         }
     }
 
-    // Wait exactly 2 seconds after page load before attempting to play music
-    window.addEventListener("load", () => {
-        setTimeout(() => {
-            canStartMusic = true;
-            startAmbientMusic();
-        }, 2000);
-    });
+    function setupMusic() {
+        PLAYLIST.sort(() => Math.random() - 0.5);
+        audio.music = new Audio(PLAYLIST[state.currentTrackIndex].file);
+        audio.music.volume = 1.0;
+        audio.music.preload = "auto";
 
-    // Setup early interaction bypass triggers for full autoplay effect
-    document.addEventListener("mousemove", handleInteractionStart);
-    document.addEventListener("keydown", handleInteractionStart);
-    document.addEventListener("scroll", handleInteractionStart);
-    document.addEventListener("touchstart", handleInteractionStart);
-    document.addEventListener("click", handleInteractionStart);
-    document.addEventListener("mousedown", handleInteractionStart);
-});
+        audio.music.onended = () => {
+            state.currentTrackIndex = (state.currentTrackIndex + 1) % PLAYLIST.length;
+            audio.music.src = PLAYLIST[state.currentTrackIndex].file;
+            safePlayMusic();
+        };
+    }
+
+    function openModal(modal) {
+        if (!modal) return;
+        modal.classList.remove("hidden");
+    }
+
+    function closeModal(modal) {
+        if (!modal) return;
+        modal.classList.add("hidden");
+    }
+
+    function togglePaintColor(btn) {
+        const color = btn.getAttribute("data-color");
+        if (btn.classList.contains("active")) {
+            btn.classList.remove("active");
+            window.activePaintColor = null;
+            return;
+        }
+
+        $all(".color-btn").forEach(button => button.classList.remove("active"));
+        btn.classList.add("active");
+        window.activePaintColor = color;
+    }
+
+    function bindEvents() {
+        if (dom.numberGrid1) {
+            dom.numberGrid1.addEventListener("click", e => {
+                const button = e.target.closest(".number-bubble");
+                if (!button) return;
+                setFirstNumber(button.getAttribute("data-value"));
+            });
+        }
+
+        if (dom.numberGrid2) {
+            dom.numberGrid2.addEventListener("click", e => {
+                const button = e.target.closest(".number-bubble");
+                if (!button) return;
+                setSecondNumber(button.getAttribute("data-value"));
+            });
+        }
+
+        $all(".operation-card").forEach(card => {
+            card.addEventListener("click", () => {
+                setOperation(card.getAttribute("data-op"));
+            });
+        });
+
+        $all(".quick-access-btn").forEach(button => {
+            button.addEventListener("click", () => {
+                const firstValue = button.getAttribute("data-first") || "1";
+                const secondValue = button.getAttribute("data-second") || "6";
+                setFirstNumber(firstValue);
+                setSecondNumber(secondValue);
+                if (dom.mainContent) {
+                    dom.mainContent.focus({ preventScroll: true });
+                    dom.mainContent.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            });
+        });
+
+        if (dom.guideBtn && dom.guideModal && dom.closeGuideBtn) {
+            dom.guideBtn.addEventListener("click", () => openModal(dom.guideModal));
+            dom.closeGuideBtn.addEventListener("click", () => closeModal(dom.guideModal));
+        }
+
+        if (dom.petShopBtn && dom.petShopModal && dom.closeShopBtn) {
+            dom.petShopBtn.addEventListener("click", () => {
+                updateShopUI();
+                openModal(dom.petShopModal);
+            });
+            dom.closeShopBtn.addEventListener("click", () => closeModal(dom.petShopModal));
+        }
+
+        if (dom.quizToggleIcon && dom.quizModeToggle) {
+            dom.quizToggleIcon.addEventListener("click", () => {
+                setQuizMode(!dom.quizModeToggle.checked);
+            });
+        }
+
+        if (dom.musicToggleIcon && dom.musicToggleBtn) {
+            dom.musicToggleIcon.addEventListener("click", () => {
+                dom.musicToggleBtn.checked = !dom.musicToggleBtn.checked;
+                dom.musicToggleBtn.dispatchEvent(new Event("change"));
+            });
+        }
+
+        if (dom.musicToggleBtn) {
+            dom.musicToggleBtn.addEventListener("change", () => {
+                if (dom.musicToggleBtn.checked) {
+                    state.musicExplicitlyMuted = false;
+                    if (!state.isReading) safePlayMusic();
+                } else {
+                    safePauseMusic(true);
+                }
+                syncMusicIcon();
+            });
+        }
+
+        if (dom.guideModal) {
+            dom.guideModal.addEventListener("click", e => {
+                if (e.target === dom.guideModal) closeModal(dom.guideModal);
+            });
+        }
+
+        if (dom.petShopModal) {
+            dom.petShopModal.addEventListener("click", e => {
+                if (e.target === dom.petShopModal) closeModal(dom.petShopModal);
+            });
+        }
+
+        if (dom.congratsPopup) {
+            dom.congratsPopup.addEventListener("click", e => {
+                if (e.target === dom.congratsPopup) closeModal(dom.congratsPopup);
+            });
+        }
+
+        const sunEl = $(".animated-sun");
+        if (sunEl) {
+            sunEl.addEventListener("click", () => {
+                sunEl.textContent = sunEl.textContent === "🌞" ? "😎" : "🌞";
+            });
+        }
+
+        const logoEl = $(".school-logo");
+        let logoClicks = 0;
+        if (logoEl) {
+            logoEl.addEventListener("click", () => {
+                logoClicks += 1;
+                if (logoClicks >= 5) {
+                    logoEl.classList.remove("flip-animation");
+                    void logoEl.offsetWidth;
+                    logoEl.classList.add("flip-animation");
+                    logoClicks = 0;
+                }
+            });
+        }
+
+        window.activePaintColor = null;
+        $all(".color-btn").forEach(btn => {
+            btn.addEventListener("click", e => {
+                e.stopPropagation();
+                togglePaintColor(btn);
+            });
+        });
+
+        if (dom.btnClear) {
+            dom.btnClear.addEventListener("click", () => {
+                if (dom.resultDiv) dom.resultDiv.innerHTML = "";
+                if (dom.resultsBox) dom.resultsBox.classList.remove("active");
+                stopSpeech();
+                state.harvestSeq += 1;
+                state.isReading = false;
+                safePlayMusic();
+                const colorPickerUI = $("#colorPickerUI");
+                if (colorPickerUI) colorPickerUI.classList.add("hidden");
+            });
+        }
+
+        if (dom.btnPrint) {
+            dom.btnPrint.addEventListener("click", () => {
+                window.print();
+            });
+        }
+
+        if (dom.btnGrow) {
+            dom.btnGrow.addEventListener("click", e => {
+                e.stopPropagation();
+
+                state.quizMode = dom.quizModeToggle?.checked ?? state.quizMode;
+
+                if (!audio.speech.src) {
+                    audio.speech.src = "data:audio/mp3;base64,//OQxAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq";
+                    audio.speech.play().then(() => audio.speech.pause()).catch(() => {});
+                }
+
+                if (dom.resultDiv) dom.resultDiv.innerHTML = "";
+                renderTable();
+
+                const paragraphs = dom.resultDiv ? $all("p", dom.resultDiv) : [];
+
+                if (state.quizMode) {
+                    paragraphs.forEach(pBlock => createQuizChoices(pBlock));
+                    $all(".quiz-btn", dom.resultDiv).forEach(btn => {
+                        btn.addEventListener("click", event => {
+                            event.stopPropagation();
+                            checkQuizAnswer(btn);
+                        });
+                    });
+                } else {
+                    paragraphs.forEach(pBlock => {
+                        pBlock.classList.remove("quiz-hidden");
+                        pBlock.removeAttribute("data-locked");
+                        pBlock.removeAttribute("data-quiz-solved");
+                    });
+                }
+
+                if (dom.resultsBox) dom.resultsBox.classList.add("active");
+                const colorPickerUI = $("#colorPickerUI");
+                if (colorPickerUI) colorPickerUI.classList.remove("hidden");
+
+                if (paragraphs.length === 0) {
+                    startAmbientMusic();
+                    return;
+                }
+
+                showCongratsPopup();
+                launchEmojiSpray();
+
+                state.isReading = true;
+                stopSpeech();
+                safePauseMusic();
+
+                state.harvestSeq += 1;
+                const currentSeqId = state.harvestSeq;
+                let currentIndex = 0;
+
+                setTimeout(() => {
+                    dom.resultsBox?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+                    if (state.quizMode) {
+                        state.isReading = false;
+                        safePlayMusic();
+                        return;
+                    }
+
+                    const speakNext = () => {
+                        if (currentSeqId !== state.harvestSeq) return;
+                        if (currentIndex >= paragraphs.length) return;
+
+                        const pBlock = paragraphs[currentIndex];
+                        currentIndex += 1;
+
+                        const equation = pBlock.getAttribute("data-equation") || pBlock.innerText;
+                        const isLast = currentIndex === paragraphs.length;
+
+                        speakEquation(
+                            equation,
+                            isLast
+                                ? () => {
+                                    if (currentSeqId !== state.harvestSeq) return;
+                                    state.isReading = false;
+                                    launchConfetti();
+                                    safePlayMusic();
+                                }
+                                : speakNext
+                        );
+                    };
+
+                    speakNext();
+                }, 1800);
+            });
+        }
+
+        if (dom.resultDiv) {
+            dom.resultDiv.addEventListener("click", e => {
+                const pBlock = e.target.closest("p");
+                if (!pBlock) return;
+                if (e.target.closest(".quiz-btn")) return;
+
+                e.stopPropagation();
+
+                const hasInput = pBlock.querySelector("input");
+
+                if (!hasInput && !pBlock.hasAttribute("data-read")) {
+                    state.starsCollected += 1;
+                    saveStars();
+                    animateStarToJar(e.clientX, e.clientY);
+                }
+
+                pBlock.setAttribute("data-read", "true");
+
+                if (window.activePaintColor) {
+                    pBlock.style.setProperty("background", window.activePaintColor, "important");
+                }
+
+                if (!hasInput) checkGroupCompletion(pBlock);
+
+                stopSpeech();
+                state.harvestSeq += 1;
+
+                audio.music.volume = 0.3;
+                state.isReading = true;
+
+                const equation = pBlock.getAttribute("data-equation") || pBlock.innerText;
+                speakEquation(equation, () => {
+                    state.isReading = false;
+                    audio.music.volume = 1.0;
+                });
+
+                const sparks = ["⭐", "✨", "🌸", "🎈", "🍬", "🍀"];
+                const particle = document.createElement("span");
+                particle.className = "click-particle";
+                particle.textContent = sparks[Math.floor(Math.random() * sparks.length)];
+
+                const rect = pBlock.getBoundingClientRect();
+                particle.style.left = `${e.clientX - rect.left}px`;
+                particle.style.top = `${e.clientY - rect.top}px`;
+
+                pBlock.appendChild(particle);
+                setTimeout(() => particle.remove(), 600);
+            });
+        }
+
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) {
+                audio.music.pause();
+                state.musicShouldBePaused = true;
+                stopSpeech();
+            } else if (state.ambientStarted && !state.isReading) {
+                safePlayMusic();
+            }
+        });
+
+        window.addEventListener("beforeunload", () => {
+            audio.music.pause();
+            audio.music.src = "";
+            stopSpeech();
+        });
+
+        window.addEventListener("pagehide", () => {
+            audio.music.pause();
+            audio.music.src = "";
+            stopSpeech();
+        });
+
+        document.addEventListener("mousemove", handleInteractionStart);
+        document.addEventListener("keydown", handleInteractionStart);
+        document.addEventListener("scroll", handleInteractionStart);
+        document.addEventListener("touchstart", handleInteractionStart);
+        document.addEventListener("click", handleInteractionStart);
+        document.addEventListener("mousedown", handleInteractionStart);
+    }
+
+    function boot() {
+        loadState();
+
+        dom.loadingScreen = $("#loadingScreen");
+        dom.btnGrow = $("#btnGrow");
+        dom.resultsBox = $("#resultsBox");
+        dom.resultDiv = $("#result");
+        dom.firstNumberInput = $("#firstNumber");
+        dom.secondNumberInput = $("#secondNumber");
+        dom.selectOption = $("#selectOption");
+        dom.selectionSummary = $("#selectionSummary");
+        dom.firstNumberPreview = $("#firstNumberPreview");
+        dom.operationPreview = $("#operationPreview");
+        dom.secondNumberPreview = $("#secondNumberPreview");
+        dom.numberGrid1 = $("#numberGrid1");
+        dom.numberGrid2 = $("#numberGrid2");
+        dom.mainContent = $("#mainContent");
+        dom.congratsPopup = $("#congratsPopup");
+        dom.musicToggleBtn = $("#musicToggleBtn");
+        dom.quizModeToggle = $("#quizModeToggle");
+        dom.quizToggleIcon = $("#quizToggleIcon");
+        dom.musicToggleIcon = $("#musicToggleIcon");
+        dom.btnClear = $("#btnClear");
+        dom.btnPrint = $("#btnPrint");
+        dom.starCountEl = $("#starCount");
+        dom.starJarContainer = $("#starJarContainer");
+        dom.guideBtn = $("#guideBtn");
+        dom.guideModal = $("#guideModal");
+        dom.closeGuideBtn = $("#closeGuideBtn");
+        dom.petShopBtn = $("#petShopBtn");
+        dom.petShopModal = $("#petShopModal");
+        dom.closeShopBtn = $("#closeShopBtn");
+        dom.toastNotification = $("#toastNotification");
+        dom.meadowPanda = $(".panda-bounce");
+
+        if (dom.meadowPanda) dom.meadowPanda.textContent = state.activePet;
+        if (dom.starCountEl) dom.starCountEl.textContent = String(state.starsCollected);
+        if (dom.musicToggleBtn) dom.musicToggleBtn.checked = true;
+
+        setupMusic();
+        bindEvents();
+        syncMusicIcon();
+        updateShopUI();
+        setQuizMode(dom.quizModeToggle?.checked ?? false);
+
+        setFirstNumber(dom.firstNumberInput?.value || "1");
+        setSecondNumber(dom.secondNumberInput?.value || "6");
+        setOperation(dom.selectOption?.value || "multiply");
+        updateSelectionSummary();
+
+        window.addEventListener("load", () => {
+            state.loaderTimeoutId = setTimeout(() => {
+                if (dom.loadingScreen) dom.loadingScreen.classList.add("hidden");
+                document.body.classList.add("loaded");
+            }, 1200);
+
+            setTimeout(() => {
+                state.canStartMusic = true;
+                startAmbientMusic();
+            }, 2000);
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", boot);
+})();

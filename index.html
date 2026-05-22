@@ -3,186 +3,244 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Magic Math Garden 🌸 - Bouncy Equations for Kids</title>
-    <meta name="description" content="An interactive children's educational mathematical playground with moving clouds, butterflies, floating balloons, and relaxing ambient music.">
+    <title>Magic Math Garden 🌸</title>
+    <meta name="description" content="A simple math garden for nursery children with large buttons, clear steps, and friendly support.">
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
-    <!-- 🌟 Professional Loading Screen 🌟 -->
-    <div id="loadingScreen" class="loading-screen">
+    <a class="skip-link" href="#mainContent">Skip to learning area</a>
+    <div id="loadingScreen" class="loading-screen" aria-hidden="true">
         <div class="loader-content">
-            <h1 class="bounce-title">
-                <span>M</span><span>a</span><span>g</span><span>i</span><span>c</span>
-                &nbsp;
-                <span>M</span><span>a</span><span>t</span><span>h</span>
-            </h1>
-            <div class="loader-spinner">✨</div>
-            <p>Growing the magical garden...</p>
+            <div class="loader-icon" aria-hidden="true">🌼</div>
+            <h1>Magic Math Garden</h1>
+            <p>Getting everything ready for little learners...</p>
         </div>
     </div>
 
-    <!-- Ultra-Animated Landscape Elements Overlay -->
     <div class="animation-layer" aria-hidden="true">
-        <!-- Twinkling Stars in Sky -->
-        <span class="star star-1">⭐</span>
-        <span class="star star-2">✨</span>
-        <span class="star star-3">⭐</span>
-
-        <!-- Rotating smiling sun -->
         <div class="animated-sun">🌞</div>
-
-        <!-- Gliding Birds -->
-        <div class="bird bird-1">🐦</div>
-        <div class="bird bird-2">🐤</div>
-
-        <!-- Fluttering Butterflies -->
-        <div class="butterfly butterfly-1">🦋</div>
-        <div class="butterfly butterfly-2">🦋</div>
-        <div class="butterfly butterfly-3">🦋</div>
-
-        <!-- Playful Rising Balloons -->
-        <div class="balloon balloon-1">🎈</div>
-        <div class="balloon balloon-2">💛</div>
-        <div class="balloon balloon-3">🎈</div>
-        <div class="balloon balloon-4">💜</div>
-        <div class="balloon balloon-5">💚</div>
-
-        <!-- Jumping Rabbit & Bouncing Panda on Grass Meadow -->
+        <div class="floating-bubble bubble-1">⭐</div>
+        <div class="floating-bubble bubble-2">✨</div>
+        <div class="floating-bubble bubble-3">🎈</div>
+        <div class="floating-bubble bubble-4">🦋</div>
         <div class="meadow-animal rabbit">🐇</div>
-        <div class="meadow-animal panda-bounce custom-tooltip" data-tooltip="This is your active pet! Collect stars to unlock new pets from the Pet Shop.">🐼</div>
+        <div class="meadow-animal panda-bounce custom-tooltip" data-tooltip="Your pet helps make math feel friendly.">🐼</div>
+        <div class="school-bus" aria-hidden="true">🚌</div>
+        <div class="school-child school-girl" aria-hidden="true">👧🎒</div>
+        <div class="school-child school-boy" aria-hidden="true">👦🎒</div>
     </div>
 
-    <!-- Main Container -->
     <div class="container">
-        <header>
+        <header class="hero-card glass-panel">
             <img src="./Pasted image.png" alt="Good Fortune Model School Logo" class="school-logo" onerror="this.style.display='none'">
             <div class="school-brand">GOOD FORTUNE MODEL SCHOOL IBADAN</div>
             <div class="school-motto">"Diligence and Integrity"</div>
             <h1>Magic Math Garden 🌸</h1>
-            <p>Grow happy number tables in a beautiful forest! 🌳✨</p>
+            <p class="hero-message">Tap a number, tap a sign, then press GO.</p>
         </header>
 
-        <!-- Playful Control signboard -->
-        <main class="control-panel glass-panel">
-            <!-- Teacher Quick Presets -->
-            <div class="teacher-presets">
-                <span class="preset-label">🎒 Quick Presets:</span>
-                <button class="preset-btn" data-rows="5" data-cols="5">Basic (5x5)</button>
-                <button class="preset-btn" data-rows="10" data-cols="10">Standard (10x10)</button>
-                <button class="preset-btn" data-rows="12" data-cols="12">Advanced (12x12)</button>
+        <section class="simple-help glass-panel" aria-label="How to use the app">
+            <div class="simple-help-title">3 easy steps</div>
+            <div class="simple-help-grid">
+                <div class="help-pill">1. Pick a number</div>
+                <div class="help-pill">2. Pick a sign</div>
+                <div class="help-pill">3. Press GO</div>
             </div>
+            <div id="selectionSummary" class="selection-summary" role="status" aria-live="polite">Ready to begin.</div>
+        </section>
 
-            <div class="control-inputs">
-            <div class="input-group">
-                <label for="firstNumber">🌸 How many Rows?</label>
-                <input type="number" id="firstNumber" min="1" max="20" value="5" placeholder="Enter rows">
+        <section class="quick-access glass-panel" aria-label="Quick access practice sets">
+            <div class="quick-access-header">Quick start</div>
+            <div class="quick-access-grid">
+                <button class="quick-access-btn" type="button" data-first="1" data-second="1" aria-label="Start with 1 times 1">1 × 1</button>
+                <button class="quick-access-btn" type="button" data-first="5" data-second="5" aria-label="Start with 5 times 5">5 × 5</button>
+                <button class="quick-access-btn" type="button" data-first="10" data-second="10" aria-label="Start with 10 times 10">10 × 10</button>
+                <button class="quick-access-btn" type="button" data-first="12" data-second="12" aria-label="Start with 12 times 12">12 × 12</button>
+                <button class="quick-access-btn quick-access-wide" type="button" data-first="1" data-second="12" aria-label="Start with full practice from 1 to 12">1–12</button>
             </div>
+            <p class="quick-access-note">Tap any card to load it fast, then press GO.</p>
+        </section>
 
-            <div class="input-group">
-                <label for="secondNumber">⭐ How many Columns?</label>
-                <input type="number" id="secondNumber" min="1" max="20" value="5" placeholder="Enter columns">
-            </div>
-
-            <div class="input-group">
-                <label for="selectOption">🎒 Choose Magic Math</label>
-                <select id="selectOption">
-                    <option value="add">Addition (+)</option>
-                    <option value="subtract">Subtraction (-)</option>
-                    <option value="multiply">Multiplication (×)</option>
-                    <option value="divide">Division (÷)</option>
-                </select>
-            </div>
-
-            </div> <!-- end control-inputs -->
-
-            <div class="toggles-group">
-                <div class="quiz-toggle-container">
-                    <label class="switch">
-                        <input type="checkbox" id="quizModeToggle">
-                        <span class="slider round"></span>
-                    </label>
-                    <span class="quiz-label">❓ Quiz Mode (Hide Answers)</span>
+        <main id="mainContent" class="wizard-panel glass-panel" tabindex="-1">
+            <div class="step-section" id="step1">
+                <div class="step-header">
+                    <span class="step-number">1</span>
+                    <div>
+                        <div class="step-title">Pick your first number</div>
+                        <div class="step-note">Start small. Use the big circles.</div>
+                    </div>
                 </div>
-                
-                <div class="quiz-toggle-container">
-                    <label class="switch">
-                        <input type="checkbox" id="musicToggleBtn" checked>
-                        <span class="slider round"></span>
-                    </label>
-                    <span class="quiz-label">🎵 Background Music</span>
+                <div class="number-grid" id="numberGrid1" aria-label="First number choices">
+                    <button class="number-bubble nb-1 selected" data-value="1" aria-pressed="true">1</button>
+                    <button class="number-bubble nb-2" data-value="2" aria-pressed="false">2</button>
+                    <button class="number-bubble nb-3" data-value="3" aria-pressed="false">3</button>
+                    <button class="number-bubble nb-4" data-value="4" aria-pressed="false">4</button>
+                    <button class="number-bubble nb-5" data-value="5" aria-pressed="false">5</button>
+                    <button class="number-bubble nb-6" data-value="6" aria-pressed="false">6</button>
+                    <button class="number-bubble nb-7" data-value="7" aria-pressed="false">7</button>
+                    <button class="number-bubble nb-8" data-value="8" aria-pressed="false">8</button>
+                    <button class="number-bubble nb-9" data-value="9" aria-pressed="false">9</button>
+                    <button class="number-bubble nb-10" data-value="10" aria-pressed="false">10</button>
+                    <button class="number-bubble nb-11" data-value="11" aria-pressed="false">11</button>
+                    <button class="number-bubble nb-12" data-value="12" aria-pressed="false">12</button>
                 </div>
             </div>
 
-            <div class="action-buttons">
-                <!-- Create Tables button -->
-                <button class="btn-grow" id="btnGrow">
-                    ✨ Create Tables!
-                </button>
-                <button class="btn-clear" id="btnClear" title="Clear Garden">
-                    🧹 Clear
-                </button>
-                <button class="btn-print" id="btnPrint" title="Print Worksheet">
-                    🖨️ Print
-                </button>
+            <div class="step-section" id="step2">
+                <div class="step-header">
+                    <span class="step-number">2</span>
+                    <div>
+                        <div class="step-title">Pick what to do</div>
+                        <div class="step-note">Choose the sign that matches the story.</div>
+                    </div>
+                </div>
+                <div class="operation-grid" aria-label="Math operation choices">
+                    <button class="operation-card op-add" data-op="add" aria-pressed="false">
+                        <span class="op-emoji">➕</span>
+                        <span class="op-label">Add</span>
+                        <span class="op-help">Put together</span>
+                    </button>
+                    <button class="operation-card op-sub" data-op="subtract" aria-pressed="false">
+                        <span class="op-emoji">➖</span>
+                        <span class="op-label">Take Away</span>
+                        <span class="op-help">Remove some</span>
+                    </button>
+                    <button class="operation-card op-mul selected" data-op="multiply" aria-pressed="true">
+                        <span class="op-emoji">✖️</span>
+                        <span class="op-label">Times</span>
+                        <span class="op-help">Same groups</span>
+                    </button>
+                    <button class="operation-card op-div" data-op="divide" aria-pressed="false">
+                        <span class="op-emoji">➗</span>
+                        <span class="op-label">Share</span>
+                        <span class="op-help">Split equally</span>
+                    </button>
+                </div>
             </div>
+
+            <div class="step-section" id="step3">
+                <div class="step-header">
+                    <span class="step-number">3</span>
+                    <div>
+                        <div class="step-title">How far should we count?</div>
+                        <div class="step-note">Pick a counting number.</div>
+                    </div>
+                </div>
+                <div class="number-grid" id="numberGrid2" aria-label="Counting limit choices">
+                    <button class="number-bubble nb-1" data-value="1" aria-pressed="false">1</button>
+                    <button class="number-bubble nb-2" data-value="2" aria-pressed="false">2</button>
+                    <button class="number-bubble nb-3" data-value="3" aria-pressed="false">3</button>
+                    <button class="number-bubble nb-4" data-value="4" aria-pressed="false">4</button>
+                    <button class="number-bubble nb-5" data-value="5" aria-pressed="false">5</button>
+                    <button class="number-bubble nb-6 selected" data-value="6" aria-pressed="true">6</button>
+                    <button class="number-bubble nb-7" data-value="7" aria-pressed="false">7</button>
+                    <button class="number-bubble nb-8" data-value="8" aria-pressed="false">8</button>
+                    <button class="number-bubble nb-9" data-value="9" aria-pressed="false">9</button>
+                    <button class="number-bubble nb-10" data-value="10" aria-pressed="false">10</button>
+                    <button class="number-bubble nb-11" data-value="11" aria-pressed="false">11</button>
+                    <button class="number-bubble nb-12" data-value="12" aria-pressed="false">12</button>
+                </div>
+            </div>
+
+            <div class="quick-settings glass-panel-lite">
+                <div class="quick-setting">
+                    <span class="quick-setting-label">First number</span>
+                    <span class="quick-setting-value" id="firstNumberPreview">1</span>
+                </div>
+                <div class="quick-setting">
+                    <span class="quick-setting-label">Sign</span>
+                    <span class="quick-setting-value" id="operationPreview">Times</span>
+                </div>
+                <div class="quick-setting">
+                    <span class="quick-setting-label">Count to</span>
+                    <span class="quick-setting-value" id="secondNumberPreview">6</span>
+                </div>
+            </div>
+
+            <input type="hidden" id="firstNumber" value="1">
+            <input type="hidden" id="secondNumber" value="6">
+            <select id="selectOption" style="display:none;">
+                <option value="add">Addition (+)</option>
+                <option value="subtract">Subtraction (-)</option>
+                <option value="multiply" selected>Multiplication (×)</option>
+                <option value="divide">Division (÷)</option>
+            </select>
+            <input type="checkbox" id="quizModeToggle" style="display:none;">
+            <input type="checkbox" id="musicToggleBtn" checked style="display:none;">
+
+            <button class="btn-go" id="btnGrow">
+                <span class="go-text">GO</span>
+                <span class="go-rocket">🚀</span>
+            </button>
         </main>
 
-        <!-- Results Display Box -->
-        <section class="results-container glass-panel" id="resultsBox">
-            <h2 class="results-header">Your Math Harvest 🌿</h2>
+        <section class="results-container glass-panel" id="resultsBox" aria-live="polite" aria-atomic="true">
+            <h2 class="results-header">Your Work</h2>
+            <p class="results-help">Tap any answer card to hear it again and earn stars.</p>
             <div class="scroll-wrapper">
-                <!-- Target div that the user's untouched script.js appends elements to -->
                 <div id="result"></div>
             </div>
         </section>
 
-        <!-- About & Usage Section -->
-        <section class="about-card glass-panel">
-            <h3>🎒 About the Magic Math Garden</h3>
-            <p><strong>Usage:</strong> This entertaining tool helps children easily create mathematical tables for Addition, Subtraction, Multiplication, and Division! It is designed to make learning math fun, helping kids beautifully master their multiplication table ranges with bouncy animations and a friendly voice.  Note(You have to input the number of rows and columns given the number of values you want, like now, if you want the multiplication table of 5, you have to input 5 in the first box and 12 in the second box and you select either add, subtract, multiply or divide and then click the grow button)</p>
-            <div class="credits">
-                <span>Designed with 💖 by <strong>Favie -ux</strong></span>
-            </div>
-        </section>
+        <div class="credits-bar glass-panel">
+            <span>Made with 💖 by <strong>Favie-ux</strong> for Good Fortune Model School</span>
+        </div>
     </div>
 
-    <!-- Vertical Sidebar Controls -->
     <div class="top-controls">
-        <button id="guideBtn" class="guide-btn">❓ Guide</button>
+        <button id="guideBtn" class="bar-icon-btn" title="How to Play">
+            <span class="bar-icon">📖</span>
+            <span class="bar-label">Help</span>
+        </button>
+        <button id="quizToggleIcon" class="bar-icon-btn" title="Quiz Mode">
+            <span class="bar-icon">🧩</span>
+            <span class="bar-label">Quiz</span>
+        </button>
         <div class="star-jar-container" id="starJarContainer">
-            <div class="star-jar custom-tooltip" data-tooltip="Solve math blocks to earn stars! Use them to unlock pets.">
+            <div class="star-jar">
                 <span class="jar-icon">⭐</span>
                 <span class="jar-count" id="starCount">0</span>
             </div>
         </div>
-        <button id="petShopBtn" class="pet-shop-btn custom-tooltip" data-tooltip="Spend your stars here to unlock magical companions!">🏪 Pet Shop</button>
+        <button id="musicToggleIcon" class="bar-icon-btn active" title="Music">
+            <span class="bar-icon">🎵</span>
+            <span class="bar-label">Music</span>
+        </button>
+        <button id="petShopBtn" class="bar-icon-btn" title="Pet Shop">
+            <span class="bar-icon">🏪</span>
+            <span class="bar-label">Pets</span>
+        </button>
+        <button id="btnClear" class="bar-icon-btn" title="Clear">
+            <span class="bar-icon">🧹</span>
+            <span class="bar-label">Clear</span>
+        </button>
+        <button id="btnPrint" class="bar-icon-btn" title="Print">
+            <span class="bar-icon">🖨️</span>
+            <span class="bar-label">Print</span>
+        </button>
     </div>
 
-    <!-- Old Gentle Sound Status Banner Removed -->
-
-    <!-- Congratulations Popup Modal -->
     <div id="congratsPopup" class="congrats-popup hidden">
         <div class="popup-content">
-            <h2>🎉 Congratulations! 🎉</h2>
-            <p>Your tables are successfully created!</p>
+            <h2>🎉 Great job! 🎉</h2>
+            <p>You finished your math work!</p>
         </div>
     </div>
 
-    <!-- Guide Modal -->
     <div id="guideModal" class="pet-shop-modal hidden">
-        <div class="shop-content" style="text-align: left;">
+        <div class="shop-content guide-content">
             <button class="close-shop" id="closeGuideBtn">✖</button>
-            <h2 style="text-align: center; color: #38bdf8;">📖 How to Play</h2>
-            <div style="margin-top: 15px; line-height: 1.6; color: #475569;">
-                <p><strong>1. Earn Stars ⭐:</strong> Generate a table and click on the math blocks to read them aloud. Every block you learn gives you a magic star!</p>
-                <p><strong>2. Quiz Mode 📝:</strong> Turn on Quiz Mode to hide the answers. You must TYPE the correct answer and press Enter. Once you submit, it locks! Correct answers give you stars.</p>
-                <p><strong>3. Pet Shop 🏪:</strong> Spend your collected stars in the Pet Shop to unlock magical companions like Dragons and Unicorns.</p>
-                <p><strong>4. Paint 🎨:</strong> Use the paintbrush at the bottom to color your tables however you like!</p>
+            <h2>📖 How to Play</h2>
+            <div class="guide-steps">
+                <p><strong>1.</strong> Pick your first number.</p>
+                <p><strong>2.</strong> Pick Add, Take Away, Times, or Share.</p>
+                <p><strong>3.</strong> Pick how far to count.</p>
+                <p><strong>4.</strong> Press GO and read the answers.</p>
+                <p><strong>5.</strong> Tap answers to hear them again.</p>
             </div>
         </div>
     </div>
 
-    <!-- Pet Shop Modal -->
     <div id="petShopModal" class="pet-shop-modal hidden">
         <div class="shop-content">
             <button class="close-shop" id="closeShopBtn">✖</button>
@@ -203,22 +261,19 @@
         </div>
     </div>
 
-    <!-- Magic Paintbrush -->
-    <div id="colorPickerUI" class="color-picker hidden">
+    <div id="colorPickerUI" class="color-picker hidden" aria-label="Paint colors">
         <span>🎨 Paint!</span>
-        <button class="color-btn" style="background:#ffadad;" data-color="#ffadad"></button>
-        <button class="color-btn" style="background:#ffd6a5;" data-color="#ffd6a5"></button>
-        <button class="color-btn" style="background:#fdffb6;" data-color="#fdffb6"></button>
-        <button class="color-btn" style="background:#caffbf;" data-color="#caffbf"></button>
-        <button class="color-btn" style="background:#9bf6ff;" data-color="#9bf6ff"></button>
-        <button class="color-btn" style="background:#a0c4ff;" data-color="#a0c4ff"></button>
-        <button class="color-btn" style="background:#bdb2ff;" data-color="#bdb2ff"></button>
+        <button class="color-btn" style="background:#ffadad;" data-color="#ffadad" aria-label="Pink"></button>
+        <button class="color-btn" style="background:#ffd6a5;" data-color="#ffd6a5" aria-label="Orange"></button>
+        <button class="color-btn" style="background:#fdffb6;" data-color="#fdffb6" aria-label="Yellow"></button>
+        <button class="color-btn" style="background:#caffbf;" data-color="#caffbf" aria-label="Green"></button>
+        <button class="color-btn" style="background:#9bf6ff;" data-color="#9bf6ff" aria-label="Blue"></button>
+        <button class="color-btn" style="background:#a0c4ff;" data-color="#a0c4ff" aria-label="Sky blue"></button>
+        <button class="color-btn" style="background:#bdb2ff;" data-color="#bdb2ff" aria-label="Purple"></button>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toastNotification" class="toast hidden"></div>
+    <div id="toastNotification" class="toast hidden" role="status" aria-live="polite"></div>
 
-    <!-- Load script.js containing both your pristine math table logic and the visual design engine -->
     <script src="script.js"></script>
 </body>
 </html>
